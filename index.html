@@ -1,403 +1,207 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" data-theme="light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Atelier DEEP — Cartographie documentaire</title>
 <style>
-  :root {
-    --bg: #fafaf7;
-    --surface: #ffffff;
-    --border: #e4e2dc;
-    --text: #1a1a1a;
-    --muted: #6b6b6b;
-    --accent: #1f4e79;
-    --accent-soft: #e8eef5;
-    --financier: #c97a3f;
-    --contractuel: #5a8a3a;
-    --activites: #b8862e;
-    --reporting: #8b4789;
-    --crm: #2e7b8b;
-    --bloquant: #c0392b;
-    --important: #d68910;
-    --nice: #7f8c8d;
-  }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    font-size: 14px;
-    line-height: 1.5;
-  }
-  header {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 16px 24px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-  }
-  header h1 {
-    margin: 0;
-    font-size: 18px;
-    color: var(--accent);
-    font-weight: 600;
-  }
-  header .meta {
-    font-size: 12px;
-    color: var(--muted);
-  }
-  #refresh {
-    background: var(--accent);
-    color: white;
-    border: none;
-    padding: 6px 14px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 12px;
-    margin-left: 12px;
-  }
-  #refresh:hover { background: #163958; }
-  nav {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 0 24px;
-    display: flex;
-    gap: 4px;
-  }
-  nav button {
-    background: none;
-    border: none;
-    padding: 12px 16px;
-    cursor: pointer;
-    font-size: 14px;
-    color: var(--muted);
-    border-bottom: 2px solid transparent;
-    font-family: inherit;
-  }
-  nav button.active {
-    color: var(--accent);
-    border-bottom-color: var(--accent);
-    font-weight: 600;
-  }
-  nav button .count {
-    background: var(--accent-soft);
-    color: var(--accent);
-    padding: 1px 8px;
-    border-radius: 10px;
-    font-size: 11px;
-    margin-left: 6px;
-  }
-  main {
-    padding: 24px;
-    max-width: 1600px;
-    margin: 0 auto;
-  }
-  .view { display: none; }
-  .view.active { display: block; }
+/* =====================================================================
+   DSFR Quick Styler — self-contained stylesheet
+   ===================================================================== */
+:root {
+  --blue-france-975:#f5f5fe; --blue-france-950:#ececfe; --blue-france-925:#e3e3fd;
+  --blue-france-850:#cacafb; --blue-france-625:#8585f6; --blue-france-525:#6a6af4;
+  --blue-france-200:#2323ff; --blue-france-125:#1212ff; --blue-france-sun:#000091;
+  --red-marianne-975:#fef4f4; --red-marianne-950:#fee9e9; --red-marianne-925:#fddede;
+  --red-marianne-850:#fcbfbf; --red-marianne-625:#ff8d7e; --red-marianne-472:#e1000f;
+  --red-marianne-425:#c9191e;
+  --grey-0:#000; --grey-50:#161616; --grey-75:#1e1e1e; --grey-100:#242424;
+  --grey-150:#333; --grey-200:#3a3a3a; --grey-425:#666; --grey-625:#929292;
+  --grey-850:#cecece; --grey-900:#ddd; --grey-925:#e5e5e5; --grey-950:#eee;
+  --grey-975:#f6f6f6; --grey-1000:#fff;
+  --info-425:#0063cb; --info-525:#0078f3; --info-950:#e8edff;
+  --success-425:#18753c; --success-525:#1f8d49; --success-950:#b8fec9;
+  --warning-425:#b34000; --warning-525:#d64d00; --warning-950:#ffe9e6;
+  --error-425:#ce0500; --error-525:#e1000f; --error-950:#ffe9e9;
+  --bg-default:var(--grey-1000); --bg-alt:var(--grey-975); --bg-alt-blue:var(--blue-france-975);
+  --bg-contrast:var(--grey-950); --bg-action-high:var(--blue-france-sun);
+  --bg-action-low:var(--blue-france-925);
+  --text-title:var(--grey-50); --text-default:var(--grey-200); --text-mention:var(--grey-425);
+  --text-blue:var(--blue-france-sun); --text-inverted:var(--grey-1000); --text-inverted-blue:var(--blue-france-975);
+  --border-default:var(--grey-900); --border-plain:var(--blue-france-sun);
+  --fs-h1:2.5rem; --lh-h1:3rem;
+  --fs-h2:2rem;   --lh-h2:2.5rem;
+  --fs-h3:1.75rem;--lh-h3:2.25rem;
+  --fs-h4:1.5rem; --lh-h4:2rem;
+  --fs-h5:1.375rem;--lh-h5:1.75rem;
+  --fs-h6:1.25rem;--lh-h6:1.75rem;
+  --fs-display:3rem; --lh-display:3.5rem;
+  --fs-lead:1.25rem;--lh-lead:2rem;
+  --fs-lg:1.125rem;--lh-lg:1.75rem;
+  --fs-md:1rem;    --lh-md:1.5rem;
+  --fs-sm:.875rem; --lh-sm:1.5rem;
+  --fs-xs:.75rem;  --lh-xs:1.25rem;
+  --s-1:.25rem; --s-2:.5rem; --s-3:.75rem; --s-4:1rem; --s-5:1.25rem;
+  --s-6:1.5rem; --s-8:2rem; --s-10:2.5rem; --s-12:3rem; --s-16:4rem;
+  --container-max:78rem; --container-pad:1.5rem;
+  --shadow-raised:0 1px 2px 0 rgba(0,0,18,.08);
+}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;font-family:'Marianne',Arial,sans-serif;font-size:var(--fs-md);line-height:var(--lh-md);color:var(--text-default);background:var(--bg-default);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+h1,h2,h3,h4,h5,h6{color:var(--text-title);font-weight:700;margin:0 0 var(--s-6);font-family:inherit;text-wrap:balance}
+h1{font-size:var(--fs-h1);line-height:var(--lh-h1);letter-spacing:-.01em}
+h2{font-size:var(--fs-h2);line-height:var(--lh-h2);letter-spacing:-.01em}
+h3{font-size:var(--fs-h3);line-height:var(--lh-h3)}
+h4{font-size:var(--fs-h4);line-height:var(--lh-h4)}
+h5{font-size:var(--fs-h5);line-height:var(--lh-h5)}
+h6{font-size:var(--fs-h6);line-height:var(--lh-h6)}
+p{margin:0 0 var(--s-6);text-wrap:pretty}
+a{color:var(--text-blue);text-underline-offset:2px}
+strong{font-weight:700;color:var(--text-title)}
+code{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:.9em;background:var(--bg-contrast);padding:.1em .35em;border-radius:2px}
+::selection{background:var(--blue-france-925);color:var(--blue-france-sun)}
+:focus-visible{outline:2px solid #0a76f6;outline-offset:2px}
 
-  /* ---- Vue inventaire (pipelines en colonnes) ---- */
-  .kanban {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 16px;
-    align-items: start;
-  }
-  .column {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    overflow: hidden;
-  }
-  .column-header {
-    padding: 12px;
-    font-weight: 600;
-    font-size: 13px;
-    color: white;
-    display: flex;
-    justify-content: space-between;
-  }
-  .col-financier .column-header { background: var(--financier); }
-  .col-contractuel .column-header { background: var(--contractuel); }
-  .col-activites .column-header { background: var(--activites); }
-  .col-reporting .column-header { background: var(--reporting); }
-  .col-crm .column-header { background: var(--crm); }
-  .column-body { padding: 8px; }
-  .doc-card {
-    background: white;
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 10px;
-    margin-bottom: 6px;
-    cursor: pointer;
-    transition: border-color 0.15s;
-  }
-  .doc-card:hover { border-color: var(--accent); }
-  .doc-card.selected { border-color: var(--accent); background: var(--accent-soft); }
-  .doc-card .doc-name { font-weight: 500; margin-bottom: 4px; }
-  .doc-card .doc-meta { font-size: 11px; color: var(--muted); }
-  .doc-card .doc-meta span { margin-right: 8px; }
-  .doc-card .comment-flag {
-    display: inline-block;
-    background: #fff3cd;
-    color: #856404;
-    padding: 1px 6px;
-    border-radius: 3px;
-    font-size: 10px;
-    margin-top: 4px;
-  }
+.dsfr-btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--s-2);padding:var(--s-2) var(--s-4);min-height:2.5rem;border:1px solid transparent;background:var(--bg-action-high);color:var(--text-inverted-blue);font-family:inherit;font-size:var(--fs-md);font-weight:500;line-height:1.5;cursor:pointer;text-decoration:none;border-radius:0;white-space:nowrap;transition:background-color 120ms}
+.dsfr-btn:hover{background:var(--blue-france-125);color:var(--text-inverted-blue)}
+.dsfr-btn--secondary{background:transparent;color:var(--text-blue);border-color:currentColor}
+.dsfr-btn--secondary:hover{background:var(--bg-action-low);color:var(--text-blue)}
+.dsfr-btn--sm{min-height:2rem;padding:var(--s-1) var(--s-3);font-size:var(--fs-sm)}
 
-  /* ---- Vue cycle (timeline horizontale par doc) ---- */
-  .cycle-doc {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 16px;
-    margin-bottom: 16px;
-  }
-  .cycle-doc h3 {
-    margin: 0 0 4px 0;
-    font-size: 15px;
-    color: var(--accent);
-  }
-  .cycle-doc .doc-sub {
-    font-size: 12px;
-    color: var(--muted);
-    margin-bottom: 12px;
-  }
-  .timeline {
-    display: flex;
-    gap: 0;
-    overflow-x: auto;
-    padding-bottom: 8px;
-  }
-  .step {
-    min-width: 220px;
-    background: #f7f5ef;
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 10px;
-    margin-right: 8px;
-    position: relative;
-    font-size: 12px;
-  }
-  .step:not(:last-child)::after {
-    content: "→";
-    position: absolute;
-    right: -16px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--muted);
-    font-size: 18px;
-    z-index: 1;
-  }
-  .step .step-title {
-    font-weight: 600;
-    margin-bottom: 6px;
-    color: var(--accent);
-  }
-  .step .step-row {
-    margin-bottom: 3px;
-  }
-  .step .step-row .label {
-    color: var(--muted);
-    margin-right: 4px;
-  }
-  .step.archive { background: #f0f4e8; border-color: #c5d4a8; }
-  .step.archive .step-title { color: #5a8a3a; }
-  .wimi-path {
-    font-family: "SF Mono", Menlo, monospace;
-    font-size: 11px;
-    background: white;
-    padding: 2px 4px;
-    border-radius: 2px;
-    word-break: break-all;
-  }
-  .empty-cycle {
-    color: var(--muted);
-    font-style: italic;
-    padding: 8px 0;
-  }
+.dsfr-badge{display:inline-flex;align-items:center;gap:var(--s-1);padding:.125rem var(--s-2);font-size:var(--fs-xs);font-weight:700;line-height:1.25rem;text-transform:uppercase;letter-spacing:.02em;background:var(--bg-action-low);color:var(--text-blue)}
+.dsfr-badge--success{background:var(--success-950);color:var(--success-425)}
+.dsfr-badge--warning{background:var(--warning-950);color:var(--warning-425)}
+.dsfr-badge--error{background:var(--error-950);color:var(--error-425)}
+.dsfr-badge--info{background:var(--info-950);color:var(--info-425)}
+.dsfr-badge--neutral{background:var(--bg-contrast);color:var(--text-default)}
 
-  /* ---- Vue pilotage (par persona) ---- */
-  .persona-section {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 16px;
-    margin-bottom: 16px;
-  }
-  .persona-section h3 {
-    margin: 0 0 12px 0;
-    font-size: 15px;
-    color: var(--accent);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .persona-section h3 .count-badge {
-    background: var(--accent-soft);
-    color: var(--accent);
-    padding: 2px 10px;
-    border-radius: 12px;
-    font-size: 12px;
-  }
-  .question-card {
-    border: 1px solid var(--border);
-    border-left: 3px solid var(--accent);
-    border-radius: 4px;
-    padding: 10px 12px;
-    margin-bottom: 8px;
-    font-size: 13px;
-  }
-  .question-card.bloquant { border-left-color: var(--bloquant); }
-  .question-card.important { border-left-color: var(--important); }
-  .question-card.nice { border-left-color: var(--nice); }
-  .question-card .q-meta {
-    font-size: 11px;
-    color: var(--muted);
-    margin-top: 4px;
-  }
-  .question-card .q-meta span { margin-right: 12px; }
+.dsfr-alert{display:flex;gap:var(--s-3);padding:var(--s-4) var(--s-5);border-left:4px solid var(--info-425);background:var(--info-950);color:var(--text-default);margin-bottom:var(--s-6)}
+.dsfr-alert__title{margin:0 0 var(--s-1);font-size:var(--fs-md);color:var(--text-title);font-weight:700}
+.dsfr-alert__body{margin:0;font-size:var(--fs-sm)}
+.dsfr-alert--error{border-left-color:var(--error-425);background:var(--error-950)}
 
-  /* ---- Vue arbo Wimi ---- */
-  .wimi-tree {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 20px;
-    font-family: "SF Mono", Menlo, monospace;
-    font-size: 13px;
-    white-space: pre;
-    line-height: 1.7;
-  }
-  .wimi-folder { color: var(--accent); font-weight: 600; }
-  .wimi-doc { color: var(--muted); }
+.dsfr-field{display:flex;flex-direction:column;gap:var(--s-2);margin-bottom:var(--s-5)}
+.dsfr-label{font-weight:500;color:var(--text-title);font-size:var(--fs-md)}
+.dsfr-hint{font-size:var(--fs-sm);color:var(--text-mention)}
+.dsfr-input{width:100%;padding:var(--s-2) var(--s-3);min-height:2.5rem;font-family:inherit;font-size:var(--fs-md);color:var(--text-title);background:var(--bg-contrast);border:0;border-bottom:2px solid var(--text-title);border-radius:0;line-height:1.5}
 
-  /* ---- Vue décisions ---- */
-  .decisions-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 16px;
-  }
-  .decisions-col {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 16px;
-  }
-  .decisions-col h3 {
-    margin: 0 0 12px 0;
-    font-size: 14px;
-    color: var(--accent);
-  }
-  .decision-item {
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 8px 10px;
-    margin-bottom: 6px;
-    font-size: 12px;
-  }
-  .decision-item .author { color: var(--muted); font-size: 11px; }
+/* =====================================================================
+   Atelier DEEP — surcouche spécifique
+   ===================================================================== */
+header.app-header{background:var(--bg-default);border-bottom:1px solid var(--border-default);padding:var(--s-4) var(--s-6);display:flex;justify-content:space-between;align-items:flex-start;gap:var(--s-4);position:sticky;top:0;z-index:10}
+header.app-header .title-block h1{font-size:var(--fs-h5);line-height:var(--lh-h5);margin:0;color:var(--text-title)}
+header.app-header .title-block .meta{font-size:var(--fs-sm);color:var(--text-mention);margin-top:var(--s-1)}
+header.app-header .title-block .mode-indicator{font-size:var(--fs-xs);color:var(--text-mention);margin-top:var(--s-1);text-transform:uppercase;letter-spacing:.04em}
+header.app-header .actions{display:flex;gap:var(--s-2);flex:none}
 
-  /* ---- États globaux ---- */
-  .loading, .error, .empty {
-    text-align: center;
-    padding: 60px 20px;
-    color: var(--muted);
-  }
-  .error {
-    color: var(--bloquant);
-    background: #fdf0ef;
-    border: 1px solid #f5c6cb;
-    border-radius: 6px;
-    padding: 20px;
-    max-width: 600px;
-    margin: 40px auto;
-    text-align: left;
-  }
-  .error h2 { margin-top: 0; color: var(--bloquant); }
-  .error code {
-    background: white;
-    padding: 2px 6px;
-    border-radius: 3px;
-    font-size: 12px;
-  }
+nav.tabs{background:var(--bg-default);border-bottom:1px solid var(--border-default);padding:0 var(--s-6);display:flex;gap:0;overflow-x:auto}
+nav.tabs button{background:none;border:0;padding:var(--s-3) var(--s-4);cursor:pointer;font-family:inherit;font-size:var(--fs-md);color:var(--text-mention);border-bottom:2px solid transparent;font-weight:500;display:inline-flex;align-items:center;gap:var(--s-2);white-space:nowrap}
+nav.tabs button:hover{color:var(--text-title)}
+nav.tabs button.active{color:var(--text-blue);border-bottom-color:var(--text-blue);font-weight:700}
+nav.tabs .count{background:var(--bg-action-low);color:var(--text-blue);padding:.05rem var(--s-2);font-size:var(--fs-xs);font-weight:700;min-width:1.5rem;text-align:center}
 
-  /* ---- Config modal ---- */
-  .config-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 100;
-  }
-  .config-modal {
-    background: white;
-    padding: 24px;
-    border-radius: 8px;
-    max-width: 500px;
-    width: 90%;
-  }
-  .config-modal h2 { margin-top: 0; color: var(--accent); }
-  .config-modal label {
-    display: block;
-    margin: 12px 0 4px;
-    font-size: 13px;
-    font-weight: 500;
-  }
-  .config-modal input {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    font-family: inherit;
-    font-size: 13px;
-  }
-  .config-modal button {
-    background: var(--accent);
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 4px;
-    cursor: pointer;
-    margin-top: 16px;
-    font-size: 14px;
-  }
-  .config-modal .hint {
-    font-size: 12px;
-    color: var(--muted);
-    margin-top: 4px;
-  }
+main{padding:var(--s-6);max-width:var(--container-max);margin:0 auto}
+.view{display:none}
+.view.active{display:block}
+
+/* --- Inventaire kanban --- */
+.kanban{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:var(--s-4);align-items:start}
+.column{background:var(--bg-default);border:1px solid var(--border-default);border-top:3px solid var(--text-mention)}
+.col-financier{border-top-color:var(--warning-425)}
+.col-contractuel{border-top-color:var(--success-425)}
+.col-activites{border-top-color:var(--info-425)}
+.col-reporting{border-top-color:var(--blue-france-sun)}
+.col-crm{border-top-color:var(--text-mention)}
+.column-header{padding:var(--s-3) var(--s-4);display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border-default);background:var(--bg-alt)}
+.column-header .col-name{font-weight:700;color:var(--text-title);font-size:var(--fs-sm);text-transform:uppercase;letter-spacing:.04em}
+.column-header .col-count{color:var(--text-mention);font-size:var(--fs-sm);font-variant-numeric:tabular-nums}
+.column-body{padding:var(--s-2)}
+.doc-card{background:var(--bg-default);border:1px solid var(--border-default);border-bottom:2px solid var(--border-plain);padding:var(--s-3);margin-bottom:var(--s-2);cursor:pointer;transition:background-color 120ms}
+.doc-card:hover{background:var(--bg-alt-blue)}
+.doc-card.selected{background:var(--bg-alt-blue);border-bottom-width:3px}
+.doc-card .doc-name{font-weight:700;color:var(--text-title);margin-bottom:var(--s-1);font-size:var(--fs-sm);line-height:var(--lh-sm)}
+.doc-card .doc-meta{font-size:var(--fs-xs);color:var(--text-mention);line-height:var(--lh-xs)}
+.doc-card .doc-meta .sep{margin:0 var(--s-1)}
+.doc-card .doc-conf{color:var(--text-blue);font-weight:700}
+.doc-card .comment-flag{display:inline-flex;align-items:center;gap:var(--s-1);background:var(--warning-950);color:var(--warning-425);padding:.05rem var(--s-2);font-size:var(--fs-xs);font-weight:700;margin-top:var(--s-2);text-transform:uppercase;letter-spacing:.02em}
+.empty-col{padding:var(--s-3);color:var(--text-mention);font-size:var(--fs-sm);font-style:italic}
+
+/* --- Cycle de vie --- */
+.cycle-doc{background:var(--bg-default);border:1px solid var(--border-default);border-bottom:2px solid var(--border-plain);padding:var(--s-5);margin-bottom:var(--s-5)}
+.cycle-doc h3{font-size:var(--fs-h6);line-height:var(--lh-h6);color:var(--text-title);margin:0 0 var(--s-1)}
+.cycle-doc h3 .pipeline-tag{font-weight:500;font-size:var(--fs-sm);color:var(--text-mention);margin-left:var(--s-2)}
+.cycle-doc .doc-sub{font-size:var(--fs-sm);color:var(--text-mention);margin:0 0 var(--s-4)}
+.timeline{display:flex;gap:0;overflow-x:auto;padding-bottom:var(--s-2)}
+.step{min-width:240px;background:var(--bg-alt);border:1px solid var(--border-default);padding:var(--s-3);margin-right:var(--s-4);position:relative;font-size:var(--fs-sm)}
+.step:not(:last-child)::after{content:"›";position:absolute;right:-1rem;top:50%;transform:translateY(-50%);color:var(--text-mention);font-size:1.5rem;font-weight:700;z-index:1;line-height:1}
+.step .step-title{font-weight:700;margin-bottom:var(--s-2);color:var(--text-title);font-size:var(--fs-sm)}
+.step .step-row{margin-bottom:var(--s-1);font-size:var(--fs-xs);line-height:var(--lh-xs)}
+.step .step-row .label{color:var(--text-mention);margin-right:var(--s-1);text-transform:uppercase;letter-spacing:.02em;font-size:var(--fs-xs);font-weight:500}
+.step.archive{background:var(--success-950);border-color:var(--success-425)}
+.step.archive .step-title{color:var(--success-425)}
+.step .wimi-path{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:var(--fs-xs);background:var(--bg-default);padding:.1em .35em;word-break:break-all;display:inline-block;margin-top:var(--s-1)}
+.step .pain-row{background:var(--warning-950);color:var(--warning-425);padding:var(--s-1) var(--s-2);margin-top:var(--s-2);font-size:var(--fs-xs)}
+.step .auto-row{background:var(--success-950);color:var(--success-425);padding:var(--s-1) var(--s-2);margin-top:var(--s-1);font-size:var(--fs-xs)}
+.empty-cycle{color:var(--text-mention);font-style:italic;font-size:var(--fs-sm);padding:var(--s-2) 0}
+
+/* --- Pilotage --- */
+.persona-section{background:var(--bg-default);border:1px solid var(--border-default);border-bottom:2px solid var(--border-plain);padding:var(--s-5);margin-bottom:var(--s-5)}
+.persona-section h3{font-size:var(--fs-h6);line-height:var(--lh-h6);color:var(--text-title);margin:0 0 var(--s-4);display:flex;align-items:center;gap:var(--s-2)}
+.question-card{border:1px solid var(--border-default);border-left:4px solid var(--text-mention);padding:var(--s-3) var(--s-4);margin-bottom:var(--s-2);font-size:var(--fs-sm);background:var(--bg-default)}
+.question-card.bloquant{border-left-color:var(--error-425)}
+.question-card.important{border-left-color:var(--warning-425)}
+.question-card.nice{border-left-color:var(--text-mention)}
+.question-card .q-text{color:var(--text-title);font-weight:500;line-height:var(--lh-sm)}
+.question-card .q-meta{font-size:var(--fs-xs);color:var(--text-mention);margin-top:var(--s-2);display:flex;flex-wrap:wrap;gap:var(--s-2);align-items:center}
+.empty-persona{color:var(--text-mention);font-style:italic;font-size:var(--fs-sm)}
+
+/* --- Wimi tree --- */
+.wimi-intro{margin-bottom:var(--s-3);color:var(--text-mention);font-size:var(--fs-sm)}
+.wimi-tree{background:var(--bg-default);border:1px solid var(--border-default);padding:var(--s-5);font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:var(--fs-sm);white-space:pre;line-height:1.7;overflow-x:auto}
+.wimi-folder{color:var(--text-blue);font-weight:700}
+.wimi-doc{color:var(--text-mention)}
+
+/* --- Décisions --- */
+.decisions-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--s-4)}
+@media (max-width:900px){.decisions-grid{grid-template-columns:1fr}}
+.decisions-col{background:var(--bg-default);border:1px solid var(--border-default);border-bottom:2px solid var(--border-plain);padding:var(--s-4)}
+.decisions-col h3{font-size:var(--fs-md);color:var(--text-title);margin:0 0 var(--s-3);display:flex;align-items:center;gap:var(--s-2)}
+.decision-item{border:1px solid var(--border-default);padding:var(--s-3);margin-bottom:var(--s-2);font-size:var(--fs-sm)}
+.decision-item .d-subject{font-weight:700;color:var(--text-title)}
+.decision-item .d-detail{margin-top:var(--s-1);color:var(--text-default);font-size:var(--fs-sm)}
+.decision-item .d-author{margin-top:var(--s-2);color:var(--text-mention);font-size:var(--fs-xs)}
+
+/* --- États globaux --- */
+.loading,.empty{text-align:center;padding:var(--s-16) var(--s-5);color:var(--text-mention);font-size:var(--fs-sm)}
+.error-block{margin:var(--s-8) auto;max-width:38rem}
+
+/* --- Config modal --- */
+.config-overlay{position:fixed;inset:0;background:rgba(22,22,22,.6);display:flex;align-items:center;justify-content:center;z-index:100;padding:var(--s-4)}
+.config-modal{background:var(--bg-default);padding:var(--s-6);max-width:32rem;width:100%;border-top:4px solid var(--border-plain)}
+.config-modal h2{font-size:var(--fs-h5);line-height:var(--lh-h5);margin:0 0 var(--s-3);color:var(--text-title)}
+.config-modal .modal-intro{font-size:var(--fs-sm);color:var(--text-mention);margin-bottom:var(--s-5)}
 </style>
 </head>
 <body>
 
-<header>
-  <div>
+<header class="app-header">
+  <div class="title-block">
     <h1>Atelier DEEP — Cartographie documentaire</h1>
     <div class="meta" id="meta">Chargement…</div>
-    <div class="meta" style="font-size:10px;opacity:0.6;margin-top:2px;" id="mode-indicator"></div>
+    <div class="mode-indicator" id="mode-indicator"></div>
   </div>
-  <div>
-    <button id="config-btn" style="background:none;border:1px solid var(--border);padding:6px 12px;border-radius:4px;cursor:pointer;font-size:12px;">⚙ Config</button>
-    <button id="refresh">↻ Recharger</button>
+  <div class="actions">
+    <button id="config-btn" class="dsfr-btn dsfr-btn--secondary dsfr-btn--sm" type="button">Configuration</button>
+    <button id="refresh" class="dsfr-btn dsfr-btn--sm" type="button">Recharger</button>
   </div>
 </header>
 
-<nav>
-  <button data-view="inventaire" class="active">Inventaire <span class="count" id="count-docs">0</span></button>
-  <button data-view="cycle">Cycle de vie <span class="count" id="count-steps">0</span></button>
-  <button data-view="pilotage">Pilotage <span class="count" id="count-pilotage">0</span></button>
-  <button data-view="wimi">Arbo Wimi</button>
-  <button data-view="decisions">Décisions & questions <span class="count" id="count-decisions">0</span></button>
+<nav class="tabs" role="tablist">
+  <button data-view="inventaire" class="active" type="button">Inventaire <span class="count" id="count-docs">0</span></button>
+  <button data-view="cycle" type="button">Cycle de vie <span class="count" id="count-steps">0</span></button>
+  <button data-view="pilotage" type="button">Pilotage <span class="count" id="count-pilotage">0</span></button>
+  <button data-view="wimi" type="button">Arborescence Wimi</button>
+  <button data-view="decisions" type="button">Décisions &amp; questions <span class="count" id="count-decisions">0</span></button>
 </nav>
 
 <main>
@@ -417,20 +221,14 @@
 // ============================================================
 // Mode de fonctionnement
 // ------------------------------------------------------------
-// Cette page fonctionne dans 2 contextes :
 //   1) NORMAL : embarquée dans Grist comme Custom Widget → utilise l'API
 //      `grist` injectée par l'iframe parent. Aucune config, aucune clé.
 //   2) STANDALONE (preview/dev) : ouverte directement → demande server +
-//      docId + apiKey et appelle l'API REST. Sert uniquement à toi pour
-//      itérer sur le design sans redéployer dans Grist.
-//
-// La détection est automatique : si `window.grist` existe après chargement
-// du script SDK, on est en mode Custom Widget.
+//      docId + apiKey et appelle l'API REST.
 // ============================================================
 
-let GRIST_MODE = null; // "widget" ou "standalone"
+let GRIST_MODE = null;
 
-// ----- CONFIG standalone (localStorage) -----
 const CONFIG_KEY = "atelier_deep_config";
 function getConfig() {
   try { return JSON.parse(localStorage.getItem(CONFIG_KEY)) || {}; } catch { return {}; }
@@ -442,25 +240,31 @@ function showConfig() {
   const overlay = document.createElement("div");
   overlay.className = "config-overlay";
   overlay.innerHTML = `
-    <div class="config-modal">
-      <h2>Configuration (mode standalone)</h2>
-      <p style="font-size:12px;color:var(--muted);margin-top:0;">
-        Tu vois cette fenêtre parce que la page est ouverte directement, hors de Grist.
-        Pour l'usage normal : ajoute cette page comme Custom Widget dans Grist
-        (cf. README), aucune config ne sera demandée.
+    <div class="config-modal" role="dialog" aria-labelledby="cfg-title">
+      <h2 id="cfg-title">Configuration (mode standalone)</h2>
+      <p class="modal-intro">
+        Cette fenêtre apparaît parce que la page est ouverte directement, hors de Grist.
+        En usage normal, ajoute-la comme Custom Widget dans Grist et aucune configuration ne sera demandée.
       </p>
-      <label>Serveur Grist</label>
-      <input id="cfg-server" value="${c.server || 'https://grist.numerique.gouv.fr'}" />
 
-      <label>Document ID</label>
-      <input id="cfg-docid" value="${c.docId || ''}" placeholder="abc123XYZ" />
-      <div class="hint">Segment de l'URL après /docs/.</div>
+      <div class="dsfr-field">
+        <label class="dsfr-label" for="cfg-server">Serveur Grist</label>
+        <input class="dsfr-input" id="cfg-server" value="${c.server || 'https://grist.numerique.gouv.fr'}" />
+      </div>
 
-      <label>API Key</label>
-      <input id="cfg-apikey" type="password" value="${c.apiKey || ''}" />
-      <div class="hint">Profil Grist → API key.</div>
+      <div class="dsfr-field">
+        <label class="dsfr-label" for="cfg-docid">Identifiant du document</label>
+        <span class="dsfr-hint">Segment de l'URL après /docs/.</span>
+        <input class="dsfr-input" id="cfg-docid" value="${c.docId || ''}" placeholder="abc123XYZ" />
+      </div>
 
-      <button id="cfg-save">Enregistrer et charger</button>
+      <div class="dsfr-field">
+        <label class="dsfr-label" for="cfg-apikey">Clé d'API</label>
+        <span class="dsfr-hint">Profil Grist → API key.</span>
+        <input class="dsfr-input" id="cfg-apikey" type="password" value="${c.apiKey || ''}" />
+      </div>
+
+      <button id="cfg-save" class="dsfr-btn" type="button">Enregistrer et charger</button>
     </div>
   `;
   document.body.appendChild(overlay);
@@ -475,12 +279,7 @@ function showConfig() {
   };
 }
 
-// ----- Accès aux données : 2 implémentations selon le mode -----
-
 async function fetchTable_widget(tableName) {
-  // Mode Custom Widget : utilise le SDK Grist injecté.
-  // grist.docApi.fetchTable() renvoie un objet { id: [...], col1: [...], col2: [...] }
-  // (orientation colonnes). On le transforme en liste d'objets { id, col1, col2 }.
   const raw = await grist.docApi.fetchTable(tableName);
   if (!raw || !raw.id) return [];
   const out = [];
@@ -495,15 +294,13 @@ async function fetchTable_widget(tableName) {
 }
 
 async function fetchTable_standalone(tableName) {
-  // Mode preview/dev : appel REST direct (CORS doit être permis, sinon échoue).
-  // Sert uniquement à toi en local pendant le dev de la page.
   const c = getConfig();
   if (!c.server || !c.docId || !c.apiKey) throw new Error("CONFIG_MISSING");
   const url = `${c.server}/api/docs/${encodeURIComponent(c.docId)}/tables/${encodeURIComponent(tableName)}/records`;
   const res = await fetch(url, { headers: { Authorization: `Bearer ${c.apiKey}` }});
   if (!res.ok) {
     if (res.status === 404) throw new Error(`Table "${tableName}" introuvable.`);
-    if (res.status === 401 || res.status === 403) throw new Error("API key invalide.");
+    if (res.status === 401 || res.status === 403) throw new Error("Clé d'API invalide.");
     throw new Error(`Erreur ${res.status} : ${await res.text()}`);
   }
   const data = await res.json();
@@ -515,7 +312,6 @@ async function fetchTable(tableName) {
   return fetchTable_standalone(tableName);
 }
 
-// ----- État global -----
 let state = {
   documents: [],
   cycle: [],
@@ -524,12 +320,10 @@ let state = {
   selectedDocId: null,
 };
 
-// ----- Chargement -----
 async function loadAll() {
   const meta = document.getElementById("meta");
   meta.textContent = "Chargement…";
 
-  // En mode standalone : si pas de config, on demande à l'utilisateur
   if (GRIST_MODE === "standalone") {
     const c = getConfig();
     if (!c.server || !c.docId || !c.apiKey) {
@@ -547,7 +341,7 @@ async function loadAll() {
       fetchTable("Decisions_questions"),
     ]);
     state = { documents: docs, cycle, pilotage, decisions, selectedDocId: state.selectedDocId };
-    meta.textContent = `Dernière maj : ${new Date().toLocaleTimeString('fr-FR')} · ${docs.length} docs · ${cycle.length} étapes · ${pilotage.length} pilotage · ${decisions.length} arbitrages`;
+    meta.textContent = `Dernière mise à jour : ${new Date().toLocaleTimeString('fr-FR')} · ${docs.length} documents · ${cycle.length} étapes · ${pilotage.length} questions de pilotage · ${decisions.length} arbitrages`;
     document.getElementById("count-docs").textContent = docs.length;
     document.getElementById("count-steps").textContent = cycle.length;
     document.getElementById("count-pilotage").textContent = pilotage.length;
@@ -565,21 +359,24 @@ async function loadAll() {
 
 function showError(msg) {
   const html = `
-    <div class="error">
-      <h2>Impossible de charger les données</h2>
-      <p>${msg}</p>
-      <p>Vérifie :</p>
-      <ul>
-        <li>Les 4 tables existent dans Grist avec ces noms exacts : <code>Documents</code>, <code>Cycle_de_vie</code>, <code>Pilotage</code>, <code>Decisions_questions</code></li>
-        <li>La config (bouton ⚙ en haut à droite) est correcte</li>
-        <li>L'API key a accès au document</li>
-      </ul>
+    <div class="error-block">
+      <div class="dsfr-alert dsfr-alert--error">
+        <div>
+          <p class="dsfr-alert__title">Impossible de charger les données</p>
+          <p class="dsfr-alert__body">${escapeHtml(msg)}</p>
+          <p class="dsfr-alert__body" style="margin-top:var(--s-2);">Vérifications à faire :</p>
+          <ul style="margin:var(--s-1) 0 0 1.25rem;font-size:var(--fs-sm);">
+            <li>Les 4 tables existent dans Grist avec ces noms exacts : <code>Documents</code>, <code>Cycle_de_vie</code>, <code>Pilotage</code>, <code>Decisions_questions</code></li>
+            <li>La configuration (bouton « Configuration » en haut à droite) est correcte</li>
+            <li>La clé d'API a bien accès au document</li>
+          </ul>
+        </div>
+      </div>
     </div>
   `;
   document.querySelectorAll(".view").forEach(v => v.innerHTML = html);
 }
 
-// ----- Rendu -----
 function escapeHtml(s) {
   if (s === null || s === undefined) return "";
   return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
@@ -608,21 +405,23 @@ function renderInventaire() {
       ${pipelines.map(p => `
         <div class="column ${colors[p]}">
           <div class="column-header">
-            <span>${p}</span>
-            <span>${byPipeline[p].length}</span>
+            <span class="col-name">${p}</span>
+            <span class="col-count">${byPipeline[p].length}</span>
           </div>
           <div class="column-body">
-            ${byPipeline[p].length === 0 ? '<div style="padding:12px;color:var(--muted);font-size:12px;font-style:italic;">Aucun document</div>' :
+            ${byPipeline[p].length === 0 ? '<div class="empty-col">Aucun document</div>' :
               byPipeline[p].map(d => `
                 <div class="doc-card ${d.id === state.selectedDocId ? 'selected':''}" data-doc-id="${d.id}">
                   <div class="doc-name">${escapeHtml(d.nom)}</div>
                   <div class="doc-meta">
-                    ${d.nature ? `<span>${escapeHtml(d.nature)}</span>`:''}
-                    ${d.format_type ? `<span>· ${escapeHtml(d.format_type)}</span>`:''}
+                    ${d.nature ? escapeHtml(d.nature) : ''}
+                    ${d.nature && d.format_type ? '<span class="sep">·</span>' : ''}
+                    ${d.format_type ? escapeHtml(d.format_type) : ''}
                   </div>
-                  <div class="doc-meta" style="margin-top:2px;">
-                    ${d.confidentialite ? `<span style="color:var(--accent);">${escapeHtml(d.confidentialite)}</span>`:''}
-                    ${d.auteur_fiche ? `<span>· ${escapeHtml(d.auteur_fiche)}</span>`:''}
+                  <div class="doc-meta">
+                    ${d.confidentialite ? `<span class="doc-conf">${escapeHtml(d.confidentialite)}</span>` : ''}
+                    ${d.confidentialite && d.auteur_fiche ? '<span class="sep">·</span>' : ''}
+                    ${d.auteur_fiche ? escapeHtml(d.auteur_fiche) : ''}
                   </div>
                   ${d.commentaire_autre ? `<div class="comment-flag">💬 Commentaire</div>`:''}
                 </div>
@@ -645,7 +444,6 @@ function renderInventaire() {
 
 // --- Cycle de vie (timelines par document) ---
 function renderCycle() {
-  // group cycle steps by document, sort by ordre
   const byDoc = {};
   state.cycle.forEach(s => {
     const docId = s.document;
@@ -654,7 +452,6 @@ function renderCycle() {
   });
   Object.keys(byDoc).forEach(k => byDoc[k].sort((a,b) => (a.ordre||0)-(b.ordre||0)));
 
-  // sort docs: selected first
   const sortedDocs = [...state.documents].sort((a,b) => {
     if (a.id === state.selectedDocId) return -1;
     if (b.id === state.selectedDocId) return 1;
@@ -665,8 +462,8 @@ function renderCycle() {
     const steps = byDoc[d.id] || [];
     return `
       <div class="cycle-doc">
-        <h3>${escapeHtml(d.nom)} <span style="font-weight:400;font-size:12px;color:var(--muted);">· ${escapeHtml(d.pipeline||'?')}</span></h3>
-        <div class="doc-sub">${escapeHtml(d.nature||'')} ${d.format_type ? '· ' + escapeHtml(d.format_type) : ''}</div>
+        <h3>${escapeHtml(d.nom)}<span class="pipeline-tag">${escapeHtml(d.pipeline||'?')}</span></h3>
+        <div class="doc-sub">${escapeHtml(d.nature||'')}${d.nature && d.format_type ? ' · ' : ''}${escapeHtml(d.format_type||'')}</div>
         ${steps.length === 0 ? '<div class="empty-cycle">Aucune étape définie. Ajoute des lignes dans la table <b>Cycle_de_vie</b> pointant vers ce document.</div>' :
           `<div class="timeline">
             ${steps.map(s => {
@@ -674,16 +471,16 @@ function renderCycle() {
               return `
                 <div class="step ${isArchive?'archive':''}">
                   <div class="step-title">${s.ordre ? s.ordre + '. ' : ''}${escapeHtml(s.etape||'(sans titre)')}</div>
-                  ${s.declencheur ? `<div class="step-row"><span class="label">Déclencheur :</span>${escapeHtml(s.declencheur)}</div>`:''}
-                  ${s.producteur ? `<div class="step-row"><span class="label">Producteur :</span>${escapeHtml(s.producteur)}</div>`:''}
-                  ${s.valideurs ? `<div class="step-row"><span class="label">Valideurs :</span>${escapeHtml(s.valideurs)}</div>`:''}
-                  ${s.destinataires ? `<div class="step-row"><span class="label">Destinataires :</span>${escapeHtml(s.destinataires)}</div>`:''}
-                  ${s.stocke_chaud_dans ? `<div class="step-row"><span class="label">Chaud :</span>${escapeHtml(s.stocke_chaud_dans)}</div>`:''}
-                  ${s.frequence ? `<div class="step-row"><span class="label">Fréq. :</span>${escapeHtml(s.frequence)}</div>`:''}
-                  ${s.chemin_wimi_cible ? `<div class="step-row"><span class="label">Wimi :</span><br><span class="wimi-path">${escapeHtml(s.chemin_wimi_cible)}</span></div>`:''}
-                  ${s.condition_archivage_wimi ? `<div class="step-row"><span class="label">Cond. archivage :</span>${escapeHtml(s.condition_archivage_wimi)}</div>`:''}
-                  ${s.pain_point ? `<div class="step-row" style="background:#fff3cd;padding:4px;border-radius:3px;margin-top:4px;"><span class="label">⚠ Pain :</span>${escapeHtml(s.pain_point)}</div>`:''}
-                  ${s.automatisable && s.automatisable !== 'Non' ? `<div class="step-row" style="background:#e8f5e8;padding:4px;border-radius:3px;margin-top:4px;"><span class="label">🤖 Auto :</span>${escapeHtml(s.automatisable)}${s.commentaire_automatisation ? ' — '+escapeHtml(s.commentaire_automatisation):''}</div>`:''}
+                  ${s.declencheur ? `<div class="step-row"><span class="label">Déclencheur</span>${escapeHtml(s.declencheur)}</div>`:''}
+                  ${s.producteur ? `<div class="step-row"><span class="label">Producteur</span>${escapeHtml(s.producteur)}</div>`:''}
+                  ${s.valideurs ? `<div class="step-row"><span class="label">Valideurs</span>${escapeHtml(s.valideurs)}</div>`:''}
+                  ${s.destinataires ? `<div class="step-row"><span class="label">Destinataires</span>${escapeHtml(s.destinataires)}</div>`:''}
+                  ${s.stocke_chaud_dans ? `<div class="step-row"><span class="label">Stockage chaud</span>${escapeHtml(s.stocke_chaud_dans)}</div>`:''}
+                  ${s.frequence ? `<div class="step-row"><span class="label">Fréquence</span>${escapeHtml(s.frequence)}</div>`:''}
+                  ${s.chemin_wimi_cible ? `<div class="step-row"><span class="label">Wimi</span><br><span class="wimi-path">${escapeHtml(s.chemin_wimi_cible)}</span></div>`:''}
+                  ${s.condition_archivage_wimi ? `<div class="step-row"><span class="label">Condition d'archivage</span>${escapeHtml(s.condition_archivage_wimi)}</div>`:''}
+                  ${s.pain_point ? `<div class="pain-row"><b>Frein</b> · ${escapeHtml(s.pain_point)}</div>`:''}
+                  ${s.automatisable && s.automatisable !== 'Non' ? `<div class="auto-row"><b>Automatisable</b> · ${escapeHtml(s.automatisable)}${s.commentaire_automatisation ? ' — '+escapeHtml(s.commentaire_automatisation):''}</div>`:''}
                 </div>
               `;
             }).join('')}
@@ -700,10 +497,8 @@ function renderPilotage() {
   const personas = ["Team Leader", "Project Manager HQ", "Field Project Manager", "Lead Expert"];
   const byPersona = {};
   personas.forEach(p => byPersona[p] = []);
-  const orphans = [];
   state.pilotage.forEach(q => {
     if (byPersona[q.persona]) byPersona[q.persona].push(q);
-    else orphans.push(q);
   });
 
   const criticiteClass = (c) => {
@@ -711,19 +506,25 @@ function renderPilotage() {
     if (c === "Important") return "important";
     return "nice";
   };
+  const criticiteBadge = (c) => {
+    if (c === "Bloquant") return '<span class="dsfr-badge dsfr-badge--error">Bloquant</span>';
+    if (c === "Important") return '<span class="dsfr-badge dsfr-badge--warning">Important</span>';
+    if (c === "Nice-to-have") return '<span class="dsfr-badge dsfr-badge--neutral">Nice-to-have</span>';
+    return '';
+  };
 
   const html = personas.map(p => `
     <div class="persona-section">
-      <h3>${p} <span class="count-badge">${byPersona[p].length}</span></h3>
-      ${byPersona[p].length === 0 ? '<div style="color:var(--muted);font-style:italic;font-size:13px;">Aucune question définie pour ce persona.</div>' :
+      <h3>${p} <span class="dsfr-badge">${byPersona[p].length}</span></h3>
+      ${byPersona[p].length === 0 ? '<div class="empty-persona">Aucune question définie pour ce persona.</div>' :
         byPersona[p].map(q => `
           <div class="question-card ${criticiteClass(q.criticite)}">
-            <div>${escapeHtml(q.question||'(sans énoncé)')}</div>
+            <div class="q-text">${escapeHtml(q.question||'(sans énoncé)')}</div>
             <div class="q-meta">
-              ${q.frequence_consultation ? `<span>📅 ${escapeHtml(q.frequence_consultation)}</span>`:''}
-              ${q.agregation ? `<span>📊 ${escapeHtml(q.agregation)}</span>`:''}
-              ${q.format_souhaite ? `<span>📐 ${escapeHtml(q.format_souhaite)}</span>`:''}
-              ${q.criticite ? `<span><b>${escapeHtml(q.criticite)}</b></span>`:''}
+              ${q.criticite ? criticiteBadge(q.criticite) : ''}
+              ${q.frequence_consultation ? `<span>Consultation · ${escapeHtml(q.frequence_consultation)}</span>`:''}
+              ${q.agregation ? `<span>Agrégation · ${escapeHtml(q.agregation)}</span>`:''}
+              ${q.format_souhaite ? `<span>Format · ${escapeHtml(q.format_souhaite)}</span>`:''}
             </div>
           </div>
         `).join('')
@@ -733,7 +534,7 @@ function renderPilotage() {
   document.getElementById("view-pilotage").innerHTML = html;
 }
 
-// --- Arbo Wimi (généré à partir des chemins_wimi_cible) ---
+// --- Arbo Wimi ---
 function renderWimi() {
   const paths = state.cycle
     .filter(s => s.chemin_wimi_cible && s.chemin_wimi_cible.trim())
@@ -744,7 +545,6 @@ function renderWimi() {
     return;
   }
 
-  // Build tree
   const tree = {};
   paths.forEach(({path, doc}) => {
     const parts = path.split('/').filter(p => p.length > 0);
@@ -773,9 +573,9 @@ function renderWimi() {
   }
 
   const html = `
-    <div style="margin-bottom:12px;color:var(--muted);font-size:13px;">
-      Arborescence Wimi déduite des chemins renseignés dans <code>Cycle_de_vie.chemin_wimi_cible</code>.
-      C'est ce qui doit être figé à la fin de l'atelier.
+    <div class="wimi-intro">
+      Arborescence déduite des chemins renseignés dans <code>Cycle_de_vie.chemin_wimi_cible</code>.
+      Cible à figer en fin d'atelier.
     </div>
     <div class="wimi-tree">${renderNode(tree, 0)}</div>
   `;
@@ -795,13 +595,13 @@ function renderDecisions() {
     <div class="decisions-grid">
       ${types.map(t => `
         <div class="decisions-col">
-          <h3>${t} (${byType[t].length})</h3>
-          ${byType[t].length === 0 ? '<div style="color:var(--muted);font-size:12px;font-style:italic;">Vide.</div>' :
+          <h3>${t} <span class="dsfr-badge">${byType[t].length}</span></h3>
+          ${byType[t].length === 0 ? '<div class="empty-persona">Vide.</div>' :
             byType[t].map(d => `
               <div class="decision-item">
-                <div style="font-weight:500;">${escapeHtml(d.sujet||'')}</div>
-                ${d.detail ? `<div style="margin-top:4px;">${escapeHtml(d.detail)}</div>`:''}
-                <div class="author">${escapeHtml(d.auteur||'')} ${d.statut ? '· '+escapeHtml(d.statut) : ''}</div>
+                <div class="d-subject">${escapeHtml(d.sujet||'')}</div>
+                ${d.detail ? `<div class="d-detail">${escapeHtml(d.detail)}</div>`:''}
+                <div class="d-author">${escapeHtml(d.auteur||'')}${d.statut ? ' · '+escapeHtml(d.statut) : ''}</div>
               </div>
             `).join('')
           }
@@ -812,46 +612,34 @@ function renderDecisions() {
   document.getElementById("view-decisions").innerHTML = html;
 }
 
-// --- Nav ---
 function switchView(name) {
-  document.querySelectorAll("nav button").forEach(b => b.classList.toggle("active", b.dataset.view === name));
+  document.querySelectorAll("nav.tabs button").forEach(b => b.classList.toggle("active", b.dataset.view === name));
   document.querySelectorAll(".view").forEach(v => v.classList.toggle("active", v.id === "view-"+name));
 }
 
-document.querySelectorAll("nav button").forEach(b => {
+document.querySelectorAll("nav.tabs button").forEach(b => {
   b.onclick = () => switchView(b.dataset.view);
 });
 
 document.getElementById("refresh").onclick = loadAll;
 document.getElementById("config-btn").onclick = showConfig;
 
-// ----- Bootstrap : détection du mode + démarrage -----
 function bootstrap() {
   if (typeof grist !== "undefined" && grist && grist.ready) {
-    // Mode Custom Widget Grist
     GRIST_MODE = "widget";
-    // Cache le bouton config (inutile dans Grist)
     document.getElementById("config-btn").style.display = "none";
     document.getElementById("mode-indicator").textContent = "Custom Widget Grist";
-
-    // Demande l'accès "full" pour lire toutes les tables du document
     grist.ready({ requiredAccess: "full" });
-
-    // Quand la table principale ou ses lignes changent, on recharge tout
     grist.onRecords(() => { loadAll(); });
-    // Premier chargement explicite (au cas où onRecords n'est pas immédiat)
     loadAll();
   } else {
-    // Mode standalone (preview locale)
     GRIST_MODE = "standalone";
     document.getElementById("mode-indicator").textContent = "Mode standalone";
-    // Auto-refresh polling toutes les 30s en standalone
     setInterval(loadAll, 30000);
     loadAll();
   }
 }
 
-// Attend que le SDK Grist soit chargé (ou échoue) avant de démarrer
 if (document.readyState === "complete") {
   bootstrap();
 } else {
