@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Atelier DEEP — Cartographie documentaire</title>
+<style>
+  :root {
+    --bg: #fafaf7;
+    --surface: #ffffff;
+    --border: #e4e2dc;
+    --text: #1a1a1a;
+    --muted: #6b6b6b;
+    --accent: #1f4e79;
+    --accent-soft: #e8eef5;
+    --financier: #c97a3f;
+    --contractuel: #5a8a3a;
+    --activites: #b8862e;
+    --reporting: #8b4789;
+    --crm: #2e7b8b;
+    --bloquant: #c0392b;
+    --important: #d68910;
+    --nice: #7f8c8d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  header h1 {
+    margin: 0;
+    font-size: 18px;
+    color: var(--accent);
+    font-weight: 600;
+  }
+  header .meta {
+    font-size: 12px;
+    color: var(--muted);
+  }
+  #refresh {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    margin-left: 12px;
+  }
+  #refresh:hover { background: #163958; }
+  nav {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    display: flex;
+    gap: 4px;
+  }
+  nav button {
+    background: none;
+    border: none;
+    padding: 12px 16px;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--muted);
+    border-bottom: 2px solid transparent;
+    font-family: inherit;
+  }
+  nav button.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+    font-weight: 600;
+  }
+  nav button .count {
+    background: var(--accent-soft);
+    color: var(--accent);
+    padding: 1px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    margin-left: 6px;
+  }
+  main {
+    padding: 24px;
+    max-width: 1600px;
+    margin: 0 auto;
+  }
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* ---- Vue inventaire (pipelines en colonnes) ---- */
+  .kanban {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+    align-items: start;
+  }
+  .column {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .column-header {
+    padding: 12px;
+    font-weight: 600;
+    font-size: 13px;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+  }
+  .col-financier .column-header { background: var(--financier); }
+  .col-contractuel .column-header { background: var(--contractuel); }
+  .col-activites .column-header { background: var(--activites); }
+  .col-reporting .column-header { background: var(--reporting); }
+  .col-crm .column-header { background: var(--crm); }
+  .column-body { padding: 8px; }
+  .doc-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 10px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .doc-card:hover { border-color: var(--accent); }
+  .doc-card.selected { border-color: var(--accent); background: var(--accent-soft); }
+  .doc-card .doc-name { font-weight: 500; margin-bottom: 4px; }
+  .doc-card .doc-meta { font-size: 11px; color: var(--muted); }
+  .doc-card .doc-meta span { margin-right: 8px; }
+  .doc-card .comment-flag {
+    display: inline-block;
+    background: #fff3cd;
+    color: #856404;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+    margin-top: 4px;
+  }
+
+  /* ---- Vue cycle (timeline horizontale par doc) ---- */
+  .cycle-doc {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .cycle-doc h3 {
+    margin: 0 0 4px 0;
+    font-size: 15px;
+    color: var(--accent);
+  }
+  .cycle-doc .doc-sub {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+  .timeline {
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    padding-bottom: 8px;
+  }
+  .step {
+    min-width: 220px;
+    background: #f7f5ef;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 10px;
+    margin-right: 8px;
+    position: relative;
+    font-size: 12px;
+  }
+  .step:not(:last-child)::after {
+    content: "→";
+    position: absolute;
+    right: -16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    font-size: 18px;
+    z-index: 1;
+  }
+  .step .step-title {
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: var(--accent);
+  }
+  .step .step-row {
+    margin-bottom: 3px;
+  }
+  .step .step-row .label {
+    color: var(--muted);
+    margin-right: 4px;
+  }
+  .step.archive { background: #f0f4e8; border-color: #c5d4a8; }
+  .step.archive .step-title { color: #5a8a3a; }
+  .wimi-path {
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 11px;
+    background: white;
+    padding: 2px 4px;
+    border-radius: 2px;
+    word-break: break-all;
+  }
+  .empty-cycle {
+    color: var(--muted);
+    font-style: italic;
+    padding: 8px 0;
+  }
+
+  /* ---- Vue pilotage (par persona) ---- */
+  .persona-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .persona-section h3 {
+    margin: 0 0 12px 0;
+    font-size: 15px;
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .persona-section h3 .count-badge {
+    background: var(--accent-soft);
+    color: var(--accent);
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+  }
+  .question-card {
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 4px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    font-size: 13px;
+  }
+  .question-card.bloquant { border-left-color: var(--bloquant); }
+  .question-card.important { border-left-color: var(--important); }
+  .question-card.nice { border-left-color: var(--nice); }
+  .question-card .q-meta {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+  .question-card .q-meta span { margin-right: 12px; }
+
+  /* ---- Vue arbo Wimi ---- */
+  .wimi-tree {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 20px;
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 13px;
+    white-space: pre;
+    line-height: 1.7;
+  }
+  .wimi-folder { color: var(--accent); font-weight: 600; }
+  .wimi-doc { color: var(--muted); }
+
+  /* ---- Vue décisions ---- */
+  .decisions-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+  }
+  .decisions-col {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+  }
+  .decisions-col h3 {
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    color: var(--accent);
+  }
+  .decision-item {
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 8px 10px;
+    margin-bottom: 6px;
+    font-size: 12px;
+  }
+  .decision-item .author { color: var(--muted); font-size: 11px; }
+
+  /* ---- États globaux ---- */
+  .loading, .error, .empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+  }
+  .error {
+    color: var(--bloquant);
+    background: #fdf0ef;
+    border: 1px solid #f5c6cb;
+    border-radius: 6px;
+    padding: 20px;
+    max-width: 600px;
+    margin: 40px auto;
+    text-align: left;
+  }
+  .error h2 { margin-top: 0; color: var(--bloquant); }
+  .error code {
+    background: white;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 12px;
+  }
+
+  /* ---- Config modal ---- */
+  .config-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+  }
+  .config-modal {
+    background: white;
+    padding: 24px;
+    border-radius: 8px;
+    max-width: 500px;
+    width: 90%;
+  }
+  .config-modal h2 { margin-top: 0; color: var(--accent); }
+  .config-modal label {
+    display: block;
+    margin: 12px 0 4px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .config-modal input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 13px;
+  }
+  .config-modal button {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 16px;
+    font-size: 14px;
+  }
+  .config-modal .hint {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Atelier DEEP — Cartographie documentaire</h1>
+    <div class="meta" id="meta">Chargement…</div>
+    <div class="meta" style="font-size:10px;opacity:0.6;margin-top:2px;" id="mode-indicator"></div>
+  </div>
+  <div>
+    <button id="config-btn" style="background:none;border:1px solid var(--border);padding:6px 12px;border-radius:4px;cursor:pointer;font-size:12px;">⚙ Config</button>
+    <button id="refresh">↻ Recharger</button>
+  </div>
+</header>
+
+<nav>
+  <button data-view="inventaire" class="active">Inventaire <span class="count" id="count-docs">0</span></button>
+  <button data-view="cycle">Cycle de vie <span class="count" id="count-steps">0</span></button>
+  <button data-view="pilotage">Pilotage <span class="count" id="count-pilotage">0</span></button>
+  <button data-view="wimi">Arbo Wimi</button>
+  <button data-view="decisions">Décisions & questions <span class="count" id="count-decisions">0</span></button>
+</nav>
+
+<main>
+  <div id="view-inventaire" class="view active"></div>
+  <div id="view-cycle" class="view"></div>
+  <div id="view-pilotage" class="view"></div>
+  <div id="view-wimi" class="view"></div>
+  <div id="view-decisions" class="view"></div>
+</main>
+
+<!-- Grist Plugin API : permet à ce widget de lire les tables du document Grist parent.
+     Charge depuis l'instance Grist DINUM ; fallback sur getgrist.com pour le dev local. -->
+<script src="https://grist.numerique.gouv.fr/grist-plugin-api.js"
+        onerror="this.onerror=null;this.src='https://docs.getgrist.com/grist-plugin-api.js'"></script>
+
+<script>
+// ============================================================
+// Mode de fonctionnement
+// ------------------------------------------------------------
+// Cette page fonctionne dans 2 contextes :
+//   1) NORMAL : embarquée dans Grist comme Custom Widget → utilise l'API
+//      `grist` injectée par l'iframe parent. Aucune config, aucune clé.
+//   2) STANDALONE (preview/dev) : ouverte directement → demande server +
+//      docId + apiKey et appelle l'API REST. Sert uniquement à toi pour
+//      itérer sur le design sans redéployer dans Grist.
+//
+// La détection est automatique : si `window.grist` existe après chargement
+// du script SDK, on est en mode Custom Widget.
+// ============================================================
+
+let GRIST_MODE = null; // "widget" ou "standalone"
+
+// ----- CONFIG standalone (localStorage) -----
+const CONFIG_KEY = "atelier_deep_config";
+function getConfig() {
+  try { return JSON.parse(localStorage.getItem(CONFIG_KEY)) || {}; } catch { return {}; }
+}
+function setConfig(c) { localStorage.setItem(CONFIG_KEY, JSON.stringify(c)); }
+
+function showConfig() {
+  const c = getConfig();
+  const overlay = document.createElement("div");
+  overlay.className = "config-overlay";
+  overlay.innerHTML = `
+    <div class="config-modal">
+      <h2>Configuration (mode standalone)</h2>
+      <p style="font-size:12px;color:var(--muted);margin-top:0;">
+        Tu vois cette fenêtre parce que la page est ouverte directement, hors de Grist.
+        Pour l'usage normal : ajoute cette page comme Custom Widget dans Grist
+        (cf. README), aucune config ne sera demandée.
+      </p>
+      <label>Serveur Grist</label>
+      <input id="cfg-server" value="${c.server || 'https://grist.numerique.gouv.fr'}" />
+
+      <label>Document ID</label>
+      <input id="cfg-docid" value="${c.docId || ''}" placeholder="abc123XYZ" />
+      <div class="hint">Segment de l'URL après /docs/.</div>
+
+      <label>API Key</label>
+      <input id="cfg-apikey" type="password" value="${c.apiKey || ''}" />
+      <div class="hint">Profil Grist → API key.</div>
+
+      <button id="cfg-save">Enregistrer et charger</button>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  document.getElementById("cfg-save").onclick = () => {
+    setConfig({
+      server: document.getElementById("cfg-server").value.trim().replace(/\/$/, ""),
+      docId: document.getElementById("cfg-docid").value.trim(),
+      apiKey: document.getElementById("cfg-apikey").value.trim()
+    });
+    overlay.remove();
+    loadAll();
+  };
+}
+
+// ----- Accès aux données : 2 implémentations selon le mode -----
+
+async function fetchTable_widget(tableName) {
+  // Mode Custom Widget : utilise le SDK Grist injecté.
+  // grist.docApi.fetchTable() renvoie un objet { id: [...], col1: [...], col2: [...] }
+  // (orientation colonnes). On le transforme en liste d'objets { id, col1, col2 }.
+  const raw = await grist.docApi.fetchTable(tableName);
+  if (!raw || !raw.id) return [];
+  const out = [];
+  const n = raw.id.length;
+  const cols = Object.keys(raw);
+  for (let i = 0; i < n; i++) {
+    const row = {};
+    for (const col of cols) row[col] = raw[col][i];
+    out.push(row);
+  }
+  return out;
+}
+
+async function fetchTable_standalone(tableName) {
+  // Mode preview/dev : appel REST direct (CORS doit être permis, sinon échoue).
+  // Sert uniquement à toi en local pendant le dev de la page.
+  const c = getConfig();
+  if (!c.server || !c.docId || !c.apiKey) throw new Error("CONFIG_MISSING");
+  const url = `${c.server}/api/docs/${encodeURIComponent(c.docId)}/tables/${encodeURIComponent(tableName)}/records`;
+  const res = await fetch(url, { headers: { Authorization: `Bearer ${c.apiKey}` }});
+  if (!res.ok) {
+    if (res.status === 404) throw new Error(`Table "${tableName}" introuvable.`);
+    if (res.status === 401 || res.status === 403) throw new Error("API key invalide.");
+    throw new Error(`Erreur ${res.status} : ${await res.text()}`);
+  }
+  const data = await res.json();
+  return data.records.map(r => ({ id: r.id, ...r.fields }));
+}
+
+async function fetchTable(tableName) {
+  if (GRIST_MODE === "widget") return fetchTable_widget(tableName);
+  return fetchTable_standalone(tableName);
+}
+
+// ----- État global -----
+let state = {
+  documents: [],
+  cycle: [],
+  pilotage: [],
+  decisions: [],
+  selectedDocId: null,
+};
+
+// ----- Chargement -----
+async function loadAll() {
+  const meta = document.getElementById("meta");
+  meta.textContent = "Chargement…";
+
+  // En mode standalone : si pas de config, on demande à l'utilisateur
+  if (GRIST_MODE === "standalone") {
+    const c = getConfig();
+    if (!c.server || !c.docId || !c.apiKey) {
+      meta.textContent = "Configuration requise";
+      showConfig();
+      return;
+    }
+  }
+
+  try {
+    const [docs, cycle, pilotage, decisions] = await Promise.all([
+      fetchTable("Documents"),
+      fetchTable("Cycle_de_vie"),
+      fetchTable("Pilotage"),
+      fetchTable("Decisions_questions"),
+    ]);
+    state = { documents: docs, cycle, pilotage, decisions, selectedDocId: state.selectedDocId };
+    meta.textContent = `Dernière maj : ${new Date().toLocaleTimeString('fr-FR')} · ${docs.length} docs · ${cycle.length} étapes · ${pilotage.length} pilotage · ${decisions.length} arbitrages`;
+    document.getElementById("count-docs").textContent = docs.length;
+    document.getElementById("count-steps").textContent = cycle.length;
+    document.getElementById("count-pilotage").textContent = pilotage.length;
+    document.getElementById("count-decisions").textContent = decisions.length;
+    renderAll();
+  } catch (e) {
+    if (e.message === "CONFIG_MISSING") {
+      meta.textContent = "Configuration requise";
+      showConfig();
+    } else {
+      showError(e.message);
+    }
+  }
+}
+
+function showError(msg) {
+  const html = `
+    <div class="error">
+      <h2>Impossible de charger les données</h2>
+      <p>${msg}</p>
+      <p>Vérifie :</p>
+      <ul>
+        <li>Les 4 tables existent dans Grist avec ces noms exacts : <code>Documents</code>, <code>Cycle_de_vie</code>, <code>Pilotage</code>, <code>Decisions_questions</code></li>
+        <li>La config (bouton ⚙ en haut à droite) est correcte</li>
+        <li>L'API key a accès au document</li>
+      </ul>
+    </div>
+  `;
+  document.querySelectorAll(".view").forEach(v => v.innerHTML = html);
+}
+
+// ----- Rendu -----
+function escapeHtml(s) {
+  if (s === null || s === undefined) return "";
+  return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+}
+
+function renderAll() {
+  renderInventaire();
+  renderCycle();
+  renderPilotage();
+  renderWimi();
+  renderDecisions();
+}
+
+// --- Inventaire (kanban par pipeline) ---
+function renderInventaire() {
+  const pipelines = ["Financier", "Contractuel", "Activités", "Reporting", "CRM"];
+  const colors = { "Financier":"col-financier","Contractuel":"col-contractuel","Activités":"col-activites","Reporting":"col-reporting","CRM":"col-crm" };
+  const byPipeline = {};
+  pipelines.forEach(p => byPipeline[p] = []);
+  state.documents.forEach(d => {
+    if (byPipeline[d.pipeline]) byPipeline[d.pipeline].push(d);
+  });
+
+  const html = `
+    <div class="kanban">
+      ${pipelines.map(p => `
+        <div class="column ${colors[p]}">
+          <div class="column-header">
+            <span>${p}</span>
+            <span>${byPipeline[p].length}</span>
+          </div>
+          <div class="column-body">
+            ${byPipeline[p].length === 0 ? '<div style="padding:12px;color:var(--muted);font-size:12px;font-style:italic;">Aucun document</div>' :
+              byPipeline[p].map(d => `
+                <div class="doc-card ${d.id === state.selectedDocId ? 'selected':''}" data-doc-id="${d.id}">
+                  <div class="doc-name">${escapeHtml(d.nom)}</div>
+                  <div class="doc-meta">
+                    ${d.nature ? `<span>${escapeHtml(d.nature)}</span>`:''}
+                    ${d.format_type ? `<span>· ${escapeHtml(d.format_type)}</span>`:''}
+                  </div>
+                  <div class="doc-meta" style="margin-top:2px;">
+                    ${d.confidentialite ? `<span style="color:var(--accent);">${escapeHtml(d.confidentialite)}</span>`:''}
+                    ${d.auteur_fiche ? `<span>· ${escapeHtml(d.auteur_fiche)}</span>`:''}
+                  </div>
+                  ${d.commentaire_autre ? `<div class="comment-flag">💬 Commentaire</div>`:''}
+                </div>
+              `).join('')
+            }
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+  document.getElementById("view-inventaire").innerHTML = html;
+  document.querySelectorAll(".doc-card").forEach(c => {
+    c.onclick = () => {
+      state.selectedDocId = parseInt(c.dataset.docId);
+      renderInventaire();
+      switchView("cycle");
+    };
+  });
+}
+
+// --- Cycle de vie (timelines par document) ---
+function renderCycle() {
+  // group cycle steps by document, sort by ordre
+  const byDoc = {};
+  state.cycle.forEach(s => {
+    const docId = s.document;
+    if (!byDoc[docId]) byDoc[docId] = [];
+    byDoc[docId].push(s);
+  });
+  Object.keys(byDoc).forEach(k => byDoc[k].sort((a,b) => (a.ordre||0)-(b.ordre||0)));
+
+  // sort docs: selected first
+  const sortedDocs = [...state.documents].sort((a,b) => {
+    if (a.id === state.selectedDocId) return -1;
+    if (b.id === state.selectedDocId) return 1;
+    return 0;
+  });
+
+  const html = sortedDocs.map(d => {
+    const steps = byDoc[d.id] || [];
+    return `
+      <div class="cycle-doc">
+        <h3>${escapeHtml(d.nom)} <span style="font-weight:400;font-size:12px;color:var(--muted);">· ${escapeHtml(d.pipeline||'?')}</span></h3>
+        <div class="doc-sub">${escapeHtml(d.nature||'')} ${d.format_type ? '· ' + escapeHtml(d.format_type) : ''}</div>
+        ${steps.length === 0 ? '<div class="empty-cycle">Aucune étape définie. Ajoute des lignes dans la table <b>Cycle_de_vie</b> pointant vers ce document.</div>' :
+          `<div class="timeline">
+            ${steps.map(s => {
+              const isArchive = (s.chemin_wimi_cible && s.chemin_wimi_cible.length > 0);
+              return `
+                <div class="step ${isArchive?'archive':''}">
+                  <div class="step-title">${s.ordre ? s.ordre + '. ' : ''}${escapeHtml(s.etape||'(sans titre)')}</div>
+                  ${s.declencheur ? `<div class="step-row"><span class="label">Déclencheur :</span>${escapeHtml(s.declencheur)}</div>`:''}
+                  ${s.producteur ? `<div class="step-row"><span class="label">Producteur :</span>${escapeHtml(s.producteur)}</div>`:''}
+                  ${s.valideurs ? `<div class="step-row"><span class="label">Valideurs :</span>${escapeHtml(s.valideurs)}</div>`:''}
+                  ${s.destinataires ? `<div class="step-row"><span class="label">Destinataires :</span>${escapeHtml(s.destinataires)}</div>`:''}
+                  ${s.stocke_chaud_dans ? `<div class="step-row"><span class="label">Chaud :</span>${escapeHtml(s.stocke_chaud_dans)}</div>`:''}
+                  ${s.frequence ? `<div class="step-row"><span class="label">Fréq. :</span>${escapeHtml(s.frequence)}</div>`:''}
+                  ${s.chemin_wimi_cible ? `<div class="step-row"><span class="label">Wimi :</span><br><span class="wimi-path">${escapeHtml(s.chemin_wimi_cible)}</span></div>`:''}
+                  ${s.condition_archivage_wimi ? `<div class="step-row"><span class="label">Cond. archivage :</span>${escapeHtml(s.condition_archivage_wimi)}</div>`:''}
+                  ${s.pain_point ? `<div class="step-row" style="background:#fff3cd;padding:4px;border-radius:3px;margin-top:4px;"><span class="label">⚠ Pain :</span>${escapeHtml(s.pain_point)}</div>`:''}
+                  ${s.automatisable && s.automatisable !== 'Non' ? `<div class="step-row" style="background:#e8f5e8;padding:4px;border-radius:3px;margin-top:4px;"><span class="label">🤖 Auto :</span>${escapeHtml(s.automatisable)}${s.commentaire_automatisation ? ' — '+escapeHtml(s.commentaire_automatisation):''}</div>`:''}
+                </div>
+              `;
+            }).join('')}
+          </div>`
+        }
+      </div>
+    `;
+  }).join('');
+  document.getElementById("view-cycle").innerHTML = html || '<div class="empty">Aucun document dans l\'inventaire.</div>';
+}
+
+// --- Pilotage (groupé par persona) ---
+function renderPilotage() {
+  const personas = ["Team Leader", "Project Manager HQ", "Field Project Manager", "Lead Expert"];
+  const byPersona = {};
+  personas.forEach(p => byPersona[p] = []);
+  const orphans = [];
+  state.pilotage.forEach(q => {
+    if (byPersona[q.persona]) byPersona[q.persona].push(q);
+    else orphans.push(q);
+  });
+
+  const criticiteClass = (c) => {
+    if (c === "Bloquant") return "bloquant";
+    if (c === "Important") return "important";
+    return "nice";
+  };
+
+  const html = personas.map(p => `
+    <div class="persona-section">
+      <h3>${p} <span class="count-badge">${byPersona[p].length}</span></h3>
+      ${byPersona[p].length === 0 ? '<div style="color:var(--muted);font-style:italic;font-size:13px;">Aucune question définie pour ce persona.</div>' :
+        byPersona[p].map(q => `
+          <div class="question-card ${criticiteClass(q.criticite)}">
+            <div>${escapeHtml(q.question||'(sans énoncé)')}</div>
+            <div class="q-meta">
+              ${q.frequence_consultation ? `<span>📅 ${escapeHtml(q.frequence_consultation)}</span>`:''}
+              ${q.agregation ? `<span>📊 ${escapeHtml(q.agregation)}</span>`:''}
+              ${q.format_souhaite ? `<span>📐 ${escapeHtml(q.format_souhaite)}</span>`:''}
+              ${q.criticite ? `<span><b>${escapeHtml(q.criticite)}</b></span>`:''}
+            </div>
+          </div>
+        `).join('')
+      }
+    </div>
+  `).join('');
+  document.getElementById("view-pilotage").innerHTML = html;
+}
+
+// --- Arbo Wimi (généré à partir des chemins_wimi_cible) ---
+function renderWimi() {
+  const paths = state.cycle
+    .filter(s => s.chemin_wimi_cible && s.chemin_wimi_cible.trim())
+    .map(s => ({ path: s.chemin_wimi_cible.trim(), doc: state.documents.find(d => d.id === s.document)?.nom || '?' }));
+
+  if (paths.length === 0) {
+    document.getElementById("view-wimi").innerHTML = '<div class="empty">Aucun chemin Wimi renseigné dans <b>Cycle_de_vie</b> → champ <code>chemin_wimi_cible</code>.</div>';
+    return;
+  }
+
+  // Build tree
+  const tree = {};
+  paths.forEach(({path, doc}) => {
+    const parts = path.split('/').filter(p => p.length > 0);
+    let node = tree;
+    parts.forEach((part, i) => {
+      if (!node[part]) node[part] = { __docs: [], __children: {} };
+      if (i === parts.length - 1) node[part].__docs.push(doc);
+      node = node[part].__children;
+    });
+  });
+
+  function renderNode(node, depth) {
+    let out = '';
+    const keys = Object.keys(node).sort();
+    keys.forEach(k => {
+      const indent = '  '.repeat(depth);
+      out += `${indent}<span class="wimi-folder">📁 ${escapeHtml(k)}/</span>\n`;
+      if (node[k].__docs.length > 0) {
+        node[k].__docs.forEach(d => {
+          out += `${indent}    <span class="wimi-doc">📄 ${escapeHtml(d)}</span>\n`;
+        });
+      }
+      out += renderNode(node[k].__children, depth + 1);
+    });
+    return out;
+  }
+
+  const html = `
+    <div style="margin-bottom:12px;color:var(--muted);font-size:13px;">
+      Arborescence Wimi déduite des chemins renseignés dans <code>Cycle_de_vie.chemin_wimi_cible</code>.
+      C'est ce qui doit être figé à la fin de l'atelier.
+    </div>
+    <div class="wimi-tree">${renderNode(tree, 0)}</div>
+  `;
+  document.getElementById("view-wimi").innerHTML = html;
+}
+
+// --- Décisions ---
+function renderDecisions() {
+  const types = ["Décision prise", "Question ouverte", "Hors-périmètre Grist"];
+  const byType = {};
+  types.forEach(t => byType[t] = []);
+  state.decisions.forEach(d => {
+    if (byType[d.type]) byType[d.type].push(d);
+  });
+
+  const html = `
+    <div class="decisions-grid">
+      ${types.map(t => `
+        <div class="decisions-col">
+          <h3>${t} (${byType[t].length})</h3>
+          ${byType[t].length === 0 ? '<div style="color:var(--muted);font-size:12px;font-style:italic;">Vide.</div>' :
+            byType[t].map(d => `
+              <div class="decision-item">
+                <div style="font-weight:500;">${escapeHtml(d.sujet||'')}</div>
+                ${d.detail ? `<div style="margin-top:4px;">${escapeHtml(d.detail)}</div>`:''}
+                <div class="author">${escapeHtml(d.auteur||'')} ${d.statut ? '· '+escapeHtml(d.statut) : ''}</div>
+              </div>
+            `).join('')
+          }
+        </div>
+      `).join('')}
+    </div>
+  `;
+  document.getElementById("view-decisions").innerHTML = html;
+}
+
+// --- Nav ---
+function switchView(name) {
+  document.querySelectorAll("nav button").forEach(b => b.classList.toggle("active", b.dataset.view === name));
+  document.querySelectorAll(".view").forEach(v => v.classList.toggle("active", v.id === "view-"+name));
+}
+
+document.querySelectorAll("nav button").forEach(b => {
+  b.onclick = () => switchView(b.dataset.view);
+});
+
+document.getElementById("refresh").onclick = loadAll;
+document.getElementById("config-btn").onclick = showConfig;
+
+// ----- Bootstrap : détection du mode + démarrage -----
+function bootstrap() {
+  if (typeof grist !== "undefined" && grist && grist.ready) {
+    // Mode Custom Widget Grist
+    GRIST_MODE = "widget";
+    // Cache le bouton config (inutile dans Grist)
+    document.getElementById("config-btn").style.display = "none";
+    document.getElementById("mode-indicator").textContent = "Custom Widget Grist";
+
+    // Demande l'accès "full" pour lire toutes les tables du document
+    grist.ready({ requiredAccess: "full" });
+
+    // Quand la table principale ou ses lignes changent, on recharge tout
+    grist.onRecords(() => { loadAll(); });
+    // Premier chargement explicite (au cas où onRecords n'est pas immédiat)
+    loadAll();
+  } else {
+    // Mode standalone (preview locale)
+    GRIST_MODE = "standalone";
+    document.getElementById("mode-indicator").textContent = "Mode standalone";
+    // Auto-refresh polling toutes les 30s en standalone
+    setInterval(loadAll, 30000);
+    loadAll();
+  }
+}
+
+// Attend que le SDK Grist soit chargé (ou échoue) avant de démarrer
+if (document.readyState === "complete") {
+  bootstrap();
+} else {
+  window.addEventListener("load", bootstrap);
+}
+</script>
+</body>
+</html>
