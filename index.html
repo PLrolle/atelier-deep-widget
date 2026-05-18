@@ -123,6 +123,7 @@ main{padding:var(--s-6);max-width:var(--container-max);margin:0 auto}
 .doc-card .doc-meta{font-size:var(--fs-xs);color:var(--text-mention);line-height:var(--lh-xs)}
 .doc-card .doc-meta .sep{margin:0 var(--s-1)}
 .doc-card .doc-conf{color:var(--text-blue);font-weight:700}
+.doc-card .doc-pilote{color:var(--text-title);font-weight:700}
 .doc-card .comment-flag{display:inline-flex;align-items:center;gap:var(--s-1);background:var(--warning-950);color:var(--warning-425);padding:.05rem var(--s-2);font-size:var(--fs-xs);font-weight:700;margin-top:var(--s-2);text-transform:uppercase;letter-spacing:.02em}
 .empty-col{padding:var(--s-3);color:var(--text-mention);font-size:var(--fs-sm);font-style:italic}
 
@@ -420,9 +421,10 @@ function renderInventaire() {
                   </div>
                   <div class="doc-meta">
                     ${d.confidentialite ? `<span class="doc-conf">${escapeHtml(d.confidentialite)}</span>` : ''}
-                    ${d.confidentialite && d.auteur_fiche ? '<span class="sep">·</span>' : ''}
-                    ${d.auteur_fiche ? escapeHtml(d.auteur_fiche) : ''}
+                    ${d.confidentialite && d.saisi_par_atelier ? '<span class="sep">·</span>' : ''}
+                    ${d.saisi_par_atelier ? escapeHtml(d.saisi_par_atelier) : ''}
                   </div>
+                  ${d.pilote ? `<div class="doc-meta"><span class="doc-pilote">Pilote : ${escapeHtml(d.pilote)}</span></div>` : ''}
                   ${d.commentaire_autre ? `<div class="comment-flag">💬 Commentaire</div>`:''}
                 </div>
               `).join('')
