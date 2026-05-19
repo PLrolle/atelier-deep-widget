@@ -124,6 +124,9 @@ main{padding:var(--s-6);max-width:var(--container-max);margin:0 auto}
 .doc-card .doc-meta .sep{margin:0 var(--s-1)}
 .doc-card .doc-conf{color:var(--text-blue);font-weight:700}
 .doc-card .doc-pilote{color:var(--text-title);font-weight:700}
+.doc-card .doc-deps{margin-top:var(--s-1)}
+.doc-card .doc-deps .dep-label{color:var(--text-mention);text-transform:uppercase;letter-spacing:.02em;font-weight:700;font-size:var(--fs-xs);margin-right:var(--s-1)}
+.doc-card .doc-deps .dep-value{color:var(--text-default)}
 .doc-card .comment-flag{display:inline-flex;align-items:center;gap:var(--s-1);background:var(--warning-950);color:var(--warning-425);padding:.05rem var(--s-2);font-size:var(--fs-xs);font-weight:700;margin-top:var(--s-2);text-transform:uppercase;letter-spacing:.02em}
 .empty-col{padding:var(--s-3);color:var(--text-mention);font-size:var(--fs-sm);font-style:italic}
 
@@ -383,6 +386,19 @@ function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
 }
 
+// RefList depuis Grist : ["L", rowId1, rowId2, ...]
+function refListIds(v) {
+  if (Array.isArray(v) && v[0] === "L") return v.slice(1).filter(x => typeof x === "number");
+  return [];
+}
+function docNames(ids) {
+  return ids.map(id => state.documents.find(d => d.id === id)?.nom || `#${id}`).join(", ");
+}
+function depLine(label, ids) {
+  if (!ids.length) return "";
+  return `<div class="doc-meta doc-deps"><span class="dep-label">${label}</span><span class="dep-value">${escapeHtml(docNames(ids))}</span></div>`;
+}
+
 function renderAll() {
   renderInventaire();
   renderCycle();
@@ -425,6 +441,8 @@ function renderInventaire() {
                     ${d.saisi_par_atelier ? escapeHtml(d.saisi_par_atelier) : ''}
                   </div>
                   ${d.pilote ? `<div class="doc-meta"><span class="doc-pilote">Pilote : ${escapeHtml(d.pilote)}</span></div>` : ''}
+                  ${depLine('Requiert', refListIds(d.prerequis))}
+                  ${depLine('Requis pour', refListIds(d.requis_pour))}
                   ${d.commentaire_autre ? `<div class="comment-flag">💬 Commentaire</div>`:''}
                 </div>
               `).join('')
