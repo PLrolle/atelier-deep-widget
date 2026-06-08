@@ -127,6 +127,10 @@ main{padding:var(--s-6);max-width:var(--container-max);margin:0 auto}
 .doc-card .doc-deps{margin-top:var(--s-1)}
 .doc-card .doc-deps .dep-label{color:var(--text-mention);text-transform:uppercase;letter-spacing:.02em;font-weight:700;font-size:var(--fs-xs);margin-right:var(--s-1)}
 .doc-card .doc-deps .dep-value{color:var(--text-default)}
+.doc-card .niveau-badge{display:inline-block;padding:.05rem var(--s-2);font-size:var(--fs-xs);font-weight:700;text-transform:uppercase;letter-spacing:.02em;margin-bottom:var(--s-1)}
+.doc-card .niveau-template{background:var(--info-950);color:var(--info-425)}
+.doc-card .niveau-instance{background:var(--bg-action-low);color:var(--text-blue)}
+.doc-card .niveau-procedure{background:var(--bg-contrast);color:var(--text-mention)}
 .doc-card .comment-flag{display:inline-flex;align-items:center;gap:var(--s-1);background:var(--warning-950);color:var(--warning-425);padding:.05rem var(--s-2);font-size:var(--fs-xs);font-weight:700;margin-top:var(--s-2);text-transform:uppercase;letter-spacing:.02em}
 .empty-col{padding:var(--s-3);color:var(--text-mention);font-size:var(--fs-sm);font-style:italic}
 
@@ -429,6 +433,7 @@ function renderInventaire() {
             ${byPipeline[p].length === 0 ? '<div class="empty-col">Aucun document</div>' :
               byPipeline[p].map(d => `
                 <div class="doc-card ${d.id === state.selectedDocId ? 'selected':''}" data-doc-id="${d.id}">
+                  ${d.niveau ? `<div class="niveau-badge niveau-${d.niveau === 'template_EF' ? 'template' : (d.niveau === 'procédure' ? 'procedure' : 'instance')}">${escapeHtml(d.niveau)}</div>` : ''}
                   <div class="doc-name">${escapeHtml(d.nom)}</div>
                   <div class="doc-meta">
                     ${d.nature ? escapeHtml(d.nature) : ''}
@@ -462,54 +467,60 @@ function renderInventaire() {
   });
 }
 
-// --- Cycle de vie (timelines par document) ---
+// --- Cycle de vie (timelines par cycle = processus DEEP) ---
 function renderCycle() {
-  const byDoc = {};
+  const byCycle = {};
   state.cycle.forEach(s => {
-    const docId = s.document;
-    if (!byDoc[docId]) byDoc[docId] = [];
-    byDoc[docId].push(s);
+    const key = s.cycle || "(sans cycle assigné)";
+    if (!byCycle[key]) byCycle[key] = [];
+    byCycle[key].push(s);
   });
-  Object.keys(byDoc).forEach(k => byDoc[k].sort((a,b) => (a.ordre||0)-(b.ordre||0)));
+  Object.keys(byCycle).forEach(k => byCycle[k].sort((a,b) => (a.ordre||0)-(b.ordre||0)));
 
-  const sortedDocs = [...state.documents].sort((a,b) => {
-    if (a.id === state.selectedDocId) return -1;
-    if (b.id === state.selectedDocId) return 1;
-    return 0;
-  });
+  // Ordre d'affichage : ordre logique du workflow projet, puis le reste alphabétiquement
+  const preferredOrder = [
+    "Création tiers fournisseur",
+    "Modification RIB",
+    "Paiement BAP standard",
+    "ERF mission",
+  ];
+  const allKeys = Object.keys(byCycle);
+  const sortedKeys = [
+    ...preferredOrder.filter(k => allKeys.includes(k)),
+    ...allKeys.filter(k => !preferredOrder.includes(k)).sort(),
+  ];
 
-  const html = sortedDocs.map(d => {
-    const steps = byDoc[d.id] || [];
+  const html = sortedKeys.map(cycleName => {
+    const steps = byCycle[cycleName];
     return `
       <div class="cycle-doc">
-        <h3>${escapeHtml(d.nom)}<span class="pipeline-tag">${escapeHtml(d.pipeline||'?')}</span></h3>
-        <div class="doc-sub">${escapeHtml(d.nature||'')}${d.nature && d.format_type ? ' · ' : ''}${escapeHtml(d.format_type||'')}</div>
-        ${steps.length === 0 ? '<div class="empty-cycle">Aucune étape définie. Ajoute des lignes dans la table <b>Cycle_de_vie</b> pointant vers ce document.</div>' :
-          `<div class="timeline">
-            ${steps.map(s => {
-              const isArchive = (s.chemin_wimi_cible && s.chemin_wimi_cible.length > 0);
-              return `
-                <div class="step ${isArchive?'archive':''}">
-                  <div class="step-title">${s.ordre ? s.ordre + '. ' : ''}${escapeHtml(s.etape||'(sans titre)')}</div>
-                  ${s.declencheur ? `<div class="step-row"><span class="label">Déclencheur</span>${escapeHtml(s.declencheur)}</div>`:''}
-                  ${s.producteur ? `<div class="step-row"><span class="label">Producteur</span>${escapeHtml(s.producteur)}</div>`:''}
-                  ${s.valideurs ? `<div class="step-row"><span class="label">Valideurs</span>${escapeHtml(s.valideurs)}</div>`:''}
-                  ${s.destinataires ? `<div class="step-row"><span class="label">Destinataires</span>${escapeHtml(s.destinataires)}</div>`:''}
-                  ${s.stocke_chaud_dans ? `<div class="step-row"><span class="label">Stockage chaud</span>${escapeHtml(s.stocke_chaud_dans)}</div>`:''}
-                  ${s.frequence ? `<div class="step-row"><span class="label">Fréquence</span>${escapeHtml(s.frequence)}</div>`:''}
-                  ${s.chemin_wimi_cible ? `<div class="step-row"><span class="label">Wimi</span><br><span class="wimi-path">${escapeHtml(s.chemin_wimi_cible)}</span></div>`:''}
-                  ${s.condition_archivage_wimi ? `<div class="step-row"><span class="label">Condition d'archivage</span>${escapeHtml(s.condition_archivage_wimi)}</div>`:''}
-                  ${s.pain_point ? `<div class="pain-row"><b>Frein</b> · ${escapeHtml(s.pain_point)}</div>`:''}
-                  ${s.automatisable && s.automatisable !== 'Non' ? `<div class="auto-row"><b>Automatisable</b> · ${escapeHtml(s.automatisable)}${s.commentaire_automatisation ? ' — '+escapeHtml(s.commentaire_automatisation):''}</div>`:''}
-                </div>
-              `;
-            }).join('')}
-          </div>`
-        }
+        <h3>${escapeHtml(cycleName)} <span class="pipeline-tag">${steps.length} étape${steps.length > 1 ? 's' : ''}</span></h3>
+        <div class="timeline">
+          ${steps.map(s => {
+            const isArchive = (s.chemin_wimi_cible && s.chemin_wimi_cible.length > 0);
+            const docId = s.document;
+            const primaryDoc = docId ? state.documents.find(d => d.id === docId) : null;
+            return `
+              <div class="step ${isArchive?'archive':''}">
+                <div class="step-title">${s.ordre ? s.ordre + '. ' : ''}${escapeHtml(s.etape||'(sans titre)')}</div>
+                ${primaryDoc ? `<div class="step-row"><span class="label">Doc primaire</span>${escapeHtml(primaryDoc.nom)}</div>`:''}
+                ${s.producteur ? `<div class="step-row"><span class="label">Producteur</span>${escapeHtml(s.producteur)}</div>`:''}
+                ${s.valideurs ? `<div class="step-row"><span class="label">Valideurs</span>${escapeHtml(s.valideurs)}</div>`:''}
+                ${s.destinataires ? `<div class="step-row"><span class="label">Destinataires</span>${escapeHtml(s.destinataires)}</div>`:''}
+                ${s.stocke_chaud_dans ? `<div class="step-row"><span class="label">Stockage chaud</span>${escapeHtml(s.stocke_chaud_dans)}</div>`:''}
+                ${s.frequence ? `<div class="step-row"><span class="label">Fréquence</span>${escapeHtml(s.frequence)}</div>`:''}
+                ${s.chemin_wimi_cible ? `<div class="step-row"><span class="label">Wimi</span><br><span class="wimi-path">${escapeHtml(s.chemin_wimi_cible)}</span></div>`:''}
+                ${s.condition_archivage_wimi ? `<div class="step-row"><span class="label">Condition d'archivage</span>${escapeHtml(s.condition_archivage_wimi)}</div>`:''}
+                ${s.pain_point ? `<div class="pain-row"><b>Frein</b> · ${escapeHtml(s.pain_point)}</div>`:''}
+                ${s.automatisable && s.automatisable !== 'Non' ? `<div class="auto-row"><b>Automatisable</b> · ${escapeHtml(s.automatisable)}${s.commentaire_automatisation ? ' — '+escapeHtml(s.commentaire_automatisation):''}</div>`:''}
+              </div>
+            `;
+          }).join('')}
+        </div>
       </div>
     `;
   }).join('');
-  document.getElementById("view-cycle").innerHTML = html || '<div class="empty">Aucun document dans l\'inventaire.</div>';
+  document.getElementById("view-cycle").innerHTML = html || '<div class="empty">Aucun cycle défini. Ajoute des lignes dans la table <b>Cycle_de_vie</b> avec un champ <code>cycle</code>.</div>';
 }
 
 // --- Pilotage (groupé par persona) ---
