@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fiche procédure — RACI &amp; kit dossier (DEEP / USP)</title>
+<style>
+/* ===== DSFR tokens (sous-ensemble autoportant) ===== */
+:root{
+  --blue-france-975:#f5f5fe; --blue-france-950:#ececfe; --blue-france-925:#e3e3fd;
+  --blue-france-850:#cacafb; --blue-france-625:#8585f6; --blue-france-525:#6a6af4;
+  --blue-france-125:#1212ff; --blue-france-sun:#000091;
+  --red-marianne-950:#fee9e9; --red-marianne-472:#e1000f; --red-marianne-425:#c9191e;
+  --grey-50:#161616; --grey-200:#3a3a3a; --grey-425:#666; --grey-625:#929292;
+  --grey-900:#ddd; --grey-925:#e5e5e5; --grey-950:#eee; --grey-975:#f6f6f6; --grey-1000:#fff;
+  --info-425:#0063cb; --info-950:#e8edff;
+  --success-425:#18753c; --success-950:#b8fec9;
+  --warning-425:#b34000; --warning-950:#ffe9e6;
+  --error-425:#ce0500; --error-950:#ffe9e9;
+  --bg-default:var(--grey-1000); --bg-alt:var(--grey-975); --bg-alt-blue:var(--blue-france-975);
+  --bg-contrast:var(--grey-950); --bg-action-high:var(--blue-france-sun); --bg-action-low:var(--blue-france-925);
+  --text-title:var(--grey-50); --text-default:var(--grey-200); --text-mention:var(--grey-425);
+  --text-blue:var(--blue-france-sun); --text-inverted-blue:var(--blue-france-975);
+  --border-default:var(--grey-900); --border-plain:var(--blue-france-sun);
+  --fs-h5:1.375rem; --fs-h6:1.25rem; --fs-lg:1.125rem; --fs-md:1rem; --fs-sm:.875rem; --fs-xs:.75rem;
+  --s-1:.25rem; --s-2:.5rem; --s-3:.75rem; --s-4:1rem; --s-5:1.25rem; --s-6:1.5rem; --s-8:2rem;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;font-family:'Marianne',Arial,sans-serif;font-size:var(--fs-md);line-height:1.5;color:var(--text-default);background:var(--bg-default);-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{color:var(--text-title);font-weight:700;margin:0;font-family:inherit}
+code{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:.85em;background:var(--bg-contrast);padding:.1em .35em}
+::selection{background:var(--blue-france-925);color:var(--blue-france-sun)}
+:focus-visible{outline:2px solid #0a76f6;outline-offset:2px}
+
+header.app-header{background:var(--bg-default);border-bottom:1px solid var(--border-default);padding:var(--s-4) var(--s-6);display:flex;justify-content:space-between;align-items:flex-start;gap:var(--s-4);position:sticky;top:0;z-index:10}
+header.app-header h1{font-size:var(--fs-h5);line-height:1.3}
+header.app-header .meta{font-size:var(--fs-sm);color:var(--text-mention);margin-top:var(--s-1)}
+header.app-header .mode{font-size:var(--fs-xs);color:var(--text-mention);text-transform:uppercase;letter-spacing:.04em;margin-top:var(--s-1)}
+header.app-header .actions{display:flex;gap:var(--s-2);flex:none}
+
+.dsfr-btn{display:inline-flex;align-items:center;gap:var(--s-2);padding:var(--s-2) var(--s-4);min-height:2.25rem;border:1px solid transparent;background:var(--bg-action-high);color:var(--text-inverted-blue);font-family:inherit;font-size:var(--fs-sm);font-weight:500;cursor:pointer;text-decoration:none;border-radius:0}
+.dsfr-btn:hover{background:var(--blue-france-125)}
+.dsfr-btn--sec{background:transparent;color:var(--text-blue);border-color:currentColor}
+.dsfr-btn--sec:hover{background:var(--bg-action-low)}
+
+nav.tabs{background:var(--bg-default);border-bottom:1px solid var(--border-default);padding:0 var(--s-6);display:flex;gap:0}
+nav.tabs button{background:none;border:0;padding:var(--s-3) var(--s-4);cursor:pointer;font-family:inherit;font-size:var(--fs-md);color:var(--text-mention);border-bottom:2px solid transparent;font-weight:500}
+nav.tabs button:hover{color:var(--text-title)}
+nav.tabs button.active{color:var(--text-blue);border-bottom-color:var(--text-blue);font-weight:700}
+
+main{padding:var(--s-6);max-width:64rem;margin:0 auto}
+.view{display:none}.view.active{display:block}
+
+/* sélecteur procédure */
+.proc-picker{margin-bottom:var(--s-6)}
+.proc-picker label{display:block;font-weight:500;color:var(--text-title);margin-bottom:var(--s-2);font-size:var(--fs-sm)}
+.proc-picker select{width:100%;max-width:38rem;padding:var(--s-2) var(--s-3);min-height:2.5rem;font-family:inherit;font-size:var(--fs-md);color:var(--text-title);background:var(--bg-contrast);border:0;border-bottom:2px solid var(--text-title);border-radius:0}
+
+/* fiche */
+.fiche-head{border-left:4px solid var(--border-plain);padding:var(--s-3) var(--s-5);background:var(--bg-alt);margin-bottom:var(--s-6)}
+.fiche-head h2{font-size:var(--fs-h5);margin-bottom:var(--s-2)}
+.fiche-head .sub{font-size:var(--fs-sm);color:var(--text-mention)}
+.fiche-head .desc{margin-top:var(--s-3);color:var(--text-default)}
+
+.block{margin-bottom:var(--s-8)}
+.block-title{font-size:var(--fs-h6);color:var(--text-title);border-bottom:2px solid var(--border-plain);padding-bottom:var(--s-2);margin-bottom:var(--s-4);display:flex;align-items:center;gap:var(--s-2)}
+.block-title .count{font-size:var(--fs-sm);font-weight:500;color:var(--text-mention)}
+
+.dsfr-badge{display:inline-flex;align-items:center;gap:var(--s-1);padding:.1rem var(--s-2);font-size:var(--fs-xs);font-weight:700;text-transform:uppercase;letter-spacing:.02em;background:var(--bg-action-low);color:var(--text-blue);white-space:nowrap}
+.dsfr-badge--neutral{background:var(--bg-contrast);color:var(--text-default)}
+.dsfr-badge--success{background:var(--success-950);color:var(--success-425)}
+.dsfr-badge--warning{background:var(--warning-950);color:var(--warning-425)}
+.dsfr-badge--error{background:var(--error-950);color:var(--error-425)}
+.dsfr-badge--info{background:var(--info-950);color:var(--info-425)}
+
+/* RACI badges */
+.raci{display:inline-flex;align-items:center;justify-content:center;min-width:1.6rem;height:1.6rem;font-weight:700;font-size:var(--fs-sm);border-radius:0;color:var(--grey-1000)}
+.raci-R{background:var(--blue-france-sun)}
+.raci-A{background:var(--red-marianne-472)}
+.raci-C{background:var(--info-425)}
+.raci-I{background:var(--text-mention)}
+.raci-legend{display:flex;flex-wrap:wrap;gap:var(--s-3);font-size:var(--fs-xs);color:var(--text-mention);margin-bottom:var(--s-3)}
+.raci-legend span{display:inline-flex;align-items:center;gap:var(--s-2)}
+
+table.grid{width:100%;border-collapse:collapse;font-size:var(--fs-sm)}
+table.grid thead th{text-align:left;padding:var(--s-2) var(--s-3);background:var(--bg-action-high);color:var(--text-inverted-blue);font-weight:700;font-size:var(--fs-xs);text-transform:uppercase;letter-spacing:.02em}
+table.grid tbody td{padding:var(--s-2) var(--s-3);border-bottom:1px solid var(--border-default);vertical-align:top}
+table.grid tbody tr:nth-child(even){background:var(--bg-alt)}
+.step-num{font-weight:700;color:var(--text-blue);font-variant-numeric:tabular-nums}
+.role-cell .role{font-weight:500;color:var(--text-title)}
+.role-cell .code{font-size:var(--fs-xs);color:var(--text-mention);font-family:ui-monospace,Menlo,monospace}
+.livrable-cell{color:var(--text-blue)}
+.audit-flag{display:inline-flex;align-items:center;gap:var(--s-1);background:var(--error-950);color:var(--error-425);padding:.05rem var(--s-2);font-size:var(--fs-xs);font-weight:700;text-transform:uppercase;letter-spacing:.02em}
+
+/* seuil cards */
+.seuils-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));gap:var(--s-3)}
+.seuil-card{border:1px solid var(--border-default);border-top:3px solid var(--border-plain);padding:var(--s-3)}
+.seuil-card.active{background:var(--bg-alt-blue);border-top-width:5px}
+.seuil-card h4{font-size:var(--fs-md);color:var(--text-title);margin-bottom:var(--s-2)}
+.seuil-card .row{font-size:var(--fs-xs);margin-bottom:var(--s-1);color:var(--text-default)}
+.seuil-card .row .k{color:var(--text-mention);text-transform:uppercase;letter-spacing:.02em;font-weight:700;margin-right:var(--s-1)}
+
+/* delais */
+.delai-card{border:1px solid var(--border-default);border-left:4px solid var(--info-425);padding:var(--s-3);margin-bottom:var(--s-2);font-size:var(--fs-sm)}
+.delai-card .type{font-weight:700;color:var(--text-title)}
+.delai-card .row{font-size:var(--fs-xs);color:var(--text-default);margin-top:var(--s-1)}
+.delai-card .row .k{color:var(--text-mention);text-transform:uppercase;letter-spacing:.02em;font-weight:700;margin-right:var(--s-1)}
+
+/* matrice */
+table.matrix{width:100%;border-collapse:collapse;font-size:var(--fs-sm)}
+table.matrix thead th{text-align:left;padding:var(--s-2) var(--s-3);background:var(--bg-action-high);color:var(--text-inverted-blue);font-weight:700;font-size:var(--fs-xs);text-transform:uppercase}
+table.matrix tbody td{padding:var(--s-2) var(--s-3);border-bottom:1px solid var(--border-default);vertical-align:middle}
+table.matrix tbody tr{cursor:pointer}
+table.matrix tbody tr:hover{background:var(--bg-alt-blue)}
+table.matrix .proc-name{font-weight:700;color:var(--text-blue)}
+.empty,.loading{text-align:center;padding:var(--s-8);color:var(--text-mention)}
+.demo-banner{background:var(--warning-950);color:var(--warning-425);padding:var(--s-2) var(--s-6);font-size:var(--fs-sm);font-weight:500;text-align:center}
+
+/* config modal */
+.cfg-overlay{position:fixed;inset:0;background:rgba(22,22,22,.6);display:flex;align-items:center;justify-content:center;z-index:100;padding:var(--s-4)}
+.cfg-modal{background:var(--bg-default);padding:var(--s-6);max-width:32rem;width:100%;border-top:4px solid var(--border-plain)}
+.cfg-modal h2{font-size:var(--fs-h6);margin-bottom:var(--s-3)}
+.cfg-modal label{display:block;margin:var(--s-3) 0 var(--s-1);font-size:var(--fs-sm);font-weight:500;color:var(--text-title)}
+.cfg-modal input{width:100%;padding:var(--s-2);background:var(--bg-contrast);border:0;border-bottom:2px solid var(--text-title);font-family:inherit;font-size:var(--fs-sm)}
+.cfg-modal .hint{font-size:var(--fs-xs);color:var(--text-mention);margin-top:var(--s-1)}
+
+@media print{
+  header.app-header .actions,nav.tabs,.proc-picker,.demo-banner{display:none!important}
+  header.app-header{position:static;border-bottom:2px solid #000}
+  body{font-size:11pt;color:#000}
+  .view{display:block!important}
+  #view-matrice{display:none!important}
+  .block{break-inside:avoid}
+  table.grid thead th,table.matrix thead th{background:#000!important;color:#fff!important}
+  .fiche-head{border-left:4px solid #000;background:#f2f2f2}
+  .block-title{border-bottom:2px solid #000}
+}
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div>
+    <h1>Fiche procédure — RACI &amp; kit dossier</h1>
+    <div class="meta" id="meta">Chargement…</div>
+    <div class="mode" id="mode-indicator"></div>
+  </div>
+  <div class="actions">
+    <button id="print-btn" class="dsfr-btn dsfr-btn--sec" type="button">Imprimer</button>
+    <button id="cfg-btn" class="dsfr-btn dsfr-btn--sec" type="button">Données réelles…</button>
+    <button id="refresh" class="dsfr-btn" type="button">Recharger</button>
+  </div>
+</header>
+
+<div class="demo-banner" id="demo-banner" style="display:none">Jeu de démonstration fictif — aucune donnée réelle. Embarquez le widget dans Grist (EAC-DEEP) pour les vraies procédures.</div>
+
+<nav class="tabs" role="tablist">
+  <button data-view="detail" class="active" type="button">Vue détail</button>
+  <button data-view="matrice" type="button">Vue matricielle</button>
+</nav>
+
+<main>
+  <div id="view-detail" class="view active"></div>
+  <div id="view-matrice" class="view"></div>
+</main>
+
+<script src="https://grist.numerique.gouv.fr/grist-plugin-api.js"
+        onerror="this.onerror=null;this.src='https://docs.getgrist.com/grist-plugin-api.js'"></script>
+<script>
+// ============================================================
+// Mode : 1) WIDGET (embarqué dans Grist, iframe + SDK) — lecture via grist.docApi
+//        2) STANDALONE — jeu fictif par défaut, config optionnelle (localStorage)
+// Confidentialité : la colonne `nom` d'Acteurs_USP n'est JAMAIS chargée dans la
+// couche de rendu — droppée dès le fetch. On n'affiche que role_fonction + code.
+// ============================================================
+let GRIST_MODE = null;
+const CFG_KEY = "fiche_proc_cfg";
+const getCfg = () => { try { return JSON.parse(localStorage.getItem(CFG_KEY)) || {}; } catch { return {}; } };
+const setCfg = c => localStorage.setItem(CFG_KEY, JSON.stringify(c));
+
+const state = { procedures:[], etapes:[], livrables:[], seuils:[], delais:[], acteurs:[], documents:[], selected:null, demo:false };
+
+// ---- Lecture multi-tables ----
+async function fetchTable_widget(name){
+  const raw = await grist.docApi.fetchTable(name);
+  if(!raw || !raw.id) return [];
+  const cols = Object.keys(raw), n = raw.id.length, out=[];
+  for(let i=0;i<n;i++){ const r={}; for(const c of cols) r[c]=raw[c][i]; out.push(r); }
+  return out;
+}
+async function fetchTable_rest(name){
+  const c=getCfg();
+  const url=`${c.server}/api/docs/${encodeURIComponent(c.docId)}/tables/${encodeURIComponent(name)}/records`;
+  const res=await fetch(url,{headers:{Authorization:`Bearer ${c.apiKey}`}});
+  if(!res.ok) throw new Error(`${name}: HTTP ${res.status}`);
+  const d=await res.json();
+  return d.records.map(r=>({id:r.id, ...r.fields}));
+}
+const fetchTable = n => GRIST_MODE==="widget" ? fetchTable_widget(n) : fetchTable_rest(n);
+
+// RefList Grist = ["L", id1, id2...]
+const refIds = v => Array.isArray(v)&&v[0]==="L" ? v.slice(1).filter(x=>typeof x==="number") : [];
+
+async function loadAll(){
+  const meta=document.getElementById("meta");
+  meta.textContent="Chargement…";
+  try{
+    const [procedures,etapes,livrables,seuils,delais,acteursRaw,documents] = await Promise.all([
+      fetchTable("Procedures"), fetchTable("Procedure_etapes"), fetchTable("Procedure_livrables"),
+      fetchTable("Seuils_achat"), fetchTable("Delais_saisine"), fetchTable("Acteurs_USP"), fetchTable("Documents")
+    ]);
+    // CONFIDENTIALITÉ : on ne garde QUE id, code, role_fonction, domaine, type. `nom` est ignoré ici.
+    const acteurs = acteursRaw.map(a=>({id:a.id, code:a.code, role_fonction:a.role_fonction, domaine:a.domaine, type:a.type}));
+    Object.assign(state,{procedures,etapes,livrables,seuils,delais,acteurs,documents,demo:false});
+    document.getElementById("demo-banner").style.display="none";
+    finishLoad();
+  }catch(e){
+    // Standalone sans config valide → bascule sur le jeu fictif (pas d'erreur bloquante)
+    if(GRIST_MODE==="standalone"){ loadDemo(); }
+    else { meta.textContent="Erreur : "+e.message; }
+  }
+}
+
+function finishLoad(){
+  const meta=document.getElementById("meta");
+  meta.textContent=`${state.procedures.length} procédures · ${state.etapes.length} étapes · ${state.livrables.length} livrables`;
+  if(state.selected==null && state.procedures.length) state.selected=state.procedures[0].id;
+  renderDetail(); renderMatrice();
+}
+
+// ---- Lookups ----
+const acteurById = id => state.acteurs.find(a=>a.id===id);
+const docById = id => state.documents.find(d=>d.id===id);
+const procById = id => state.procedures.find(p=>p.id===id);
+
+function esc(s){ if(s==null) return ""; return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c])); }
+function raciLetter(r){ const m=(r||"").trim()[0]; return ["R","A","C","I"].includes(m)?m:"·"; }
+function raciBadge(r){ const l=raciLetter(r); return `<span class="raci raci-${l}" title="${esc(r||"")}">${l}</span>`; }
+function domBadge(d){ return d?`<span class="dsfr-badge dsfr-badge--neutral">${esc(d)}</span>`:""; }
+
+// ---- VUE DÉTAIL ----
+function renderDetail(){
+  const root=document.getElementById("view-detail");
+  if(!state.procedures.length){ root.innerHTML='<div class="empty">Aucune procédure.</div>'; return; }
+  const opts=state.procedures.map(p=>`<option value="${p.id}" ${p.id===state.selected?"selected":""}>${esc(p.nom)}</option>`).join("");
+  const p=procById(state.selected)||state.procedures[0];
+
+  // RACI : étapes de la procédure, triées par ordre
+  const steps=state.etapes.filter(e=>e.procedure===p.id).sort((a,b)=>(a.ordre||0)-(b.ordre||0));
+  const raciRows=steps.map(s=>{
+    const act=acteurById(s.acteur);
+    const liv=s.livrable?docById(s.livrable):null;
+    return `<tr>
+      <td class="step-num">${s.ordre??""}</td>
+      <td>${esc(s.etape)}${s.note?`<div style="color:var(--text-mention);font-size:var(--fs-xs);margin-top:2px">${esc(s.note)}</div>`:""}</td>
+      <td class="role-cell">${act?`<div class="role">${esc(act.role_fonction)}</div><div class="code">${esc(act.code)}</div>`:'<span style="color:var(--text-mention)">—</span>'}</td>
+      <td>${raciBadge(s.raci)}</td>
+      <td>${esc(s.delai)||"—"}</td>
+      <td class="livrable-cell">${liv?esc(liv.nom):""}</td>
+    </tr>`;
+  }).join("");
+
+  // Check-list : livrables de la procédure
+  const livs=state.livrables.filter(l=>l.procedure===p.id);
+  const livRows=livs.map(l=>{
+    const doc=docById(l.document);
+    const oblig=l.obligation==="Obligatoire"
+      ?'<span class="dsfr-badge dsfr-badge--error">Obligatoire</span>'
+      :'<span class="dsfr-badge dsfr-badge--warning">Conditionnel</span>';
+    return `<tr>
+      <td>${doc?esc(doc.nom):'<span style="color:var(--text-mention)">—</span>'}</td>
+      <td>${oblig}</td>
+      <td>${l.condition?esc(l.condition):"—"}</td>
+      <td>${l.audit_critique?'<span class="audit-flag">⚠ audit-critique</span>':""}</td>
+    </tr>`;
+  }).join("");
+
+  // Seuils (si achat)
+  let seuilHtml="";
+  if((p.domaine||"").toLowerCase()==="achat" && state.seuils.length){
+    const cards=[...state.seuils].sort((a,b)=>(a.borne_min||0)-(b.borne_min||0)).map(s=>`
+      <div class="seuil-card">
+        <h4>${esc(s.palier)}</h4>
+        <div class="row"><span class="k">Procédure</span>${esc(s.procedure_applicable)||"—"}</div>
+        <div class="row"><span class="k">Contrat</span>${esc(s.forme_contrat)||"—"}</div>
+        <div class="row"><span class="k">Comité</span>${esc(s.comite)||"—"}</div>
+        <div class="row"><span class="k">ANO</span>${esc(s.ano_detail)||"—"}</div>
+        <div class="row"><span class="k">Publication</span>${esc(s.publication)||"—"}</div>
+        <div class="row"><span class="k">Offres</span>${esc(s.nb_offres)||"—"}</div>
+        <div class="row"><span class="k">Délais</span>${esc(s.delais)||"—"}</div>
+      </div>`).join("");
+    seuilHtml=`<div class="block"><div class="block-title">Grille des seuils d'achat <span class="count">${state.seuils.length} paliers</span></div><div class="seuils-grid">${cards}</div></div>`;
+  }
+
+  // Délais de saisine du même domaine
+  const ds=state.delais.filter(d=>(d.domaine||"")===(p.domaine||""));
+  let dsHtml="";
+  if(ds.length){
+    const cards=ds.map(d=>`
+      <div class="delai-card">
+        <div class="type">${esc(d.type_demande)}</div>
+        <div class="row"><span class="k">Minimum</span>${esc(d.delai_minimum)||"—"}</div>
+        <div class="row"><span class="k">Recommandé</span>${esc(d.delai_recommande)||"—"}</div>
+        <div class="row"><span class="k">Infos requises</span>${esc(d.infos_requises)||"—"}</div>
+      </div>`).join("");
+    dsHtml=`<div class="block"><div class="block-title">Délais de saisine <span class="count">${ds.length}</span></div>${cards}</div>`;
+  }
+
+  root.innerHTML=`
+    <div class="proc-picker">
+      <label for="proc-sel">Procédure</label>
+      <select id="proc-sel">${opts}</select>
+    </div>
+    <div class="fiche-head">
+      <h2>${esc(p.nom)}</h2>
+      <div class="sub">${domBadge(p.domaine)} ${p.duree_totale?`<span class="dsfr-badge dsfr-badge--info">${esc(p.duree_totale)}</span>`:""} ${p.citation?`<span style="color:var(--text-mention);font-size:var(--fs-xs)">${esc(p.citation)}</span>`:""}</div>
+      ${p.description?`<div class="desc">${esc(p.description)}</div>`:""}
+    </div>
+
+    <div class="block">
+      <div class="block-title">RACI — déroulé des étapes <span class="count">${steps.length} étapes</span></div>
+      <div class="raci-legend">
+        <span>${raciBadge("R")} Responsible (réalise)</span>
+        <span>${raciBadge("A")} Accountable (valide / rend des comptes)</span>
+        <span>${raciBadge("C")} Consulted</span>
+        <span>${raciBadge("I")} Informed</span>
+      </div>
+      ${steps.length?`<table class="grid"><thead><tr><th>#</th><th>Étape</th><th>Rôle</th><th>RACI</th><th>Délai</th><th>Livrable</th></tr></thead><tbody>${raciRows}</tbody></table>`:'<div class="empty">Aucune étape définie.</div>'}
+    </div>
+
+    <div class="block">
+      <div class="block-title">Check-list de dossier conforme <span class="count">${livs.length} documents</span></div>
+      ${livs.length?`<table class="grid"><thead><tr><th>Document</th><th>Obligation</th><th>Condition</th><th>Audit</th></tr></thead><tbody>${livRows}</tbody></table>`:'<div class="empty">Aucun document requis renseigné.</div>'}
+    </div>
+
+    ${seuilHtml}
+    ${dsHtml}
+  `;
+  document.getElementById("proc-sel").onchange=ev=>{ state.selected=parseInt(ev.target.value); renderDetail(); };
+}
+
+// ---- VUE MATRICIELLE ----
+function renderMatrice(){
+  const root=document.getElementById("view-matrice");
+  if(!state.procedures.length){ root.innerHTML='<div class="empty">Aucune procédure.</div>'; return; }
+  const rows=state.procedures.map(p=>{
+    const steps=state.etapes.filter(e=>e.procedure===p.id);
+    const livs=state.livrables.filter(l=>l.procedure===p.id);
+    const accountables=[...new Set(steps.filter(s=>raciLetter(s.raci)==="A").map(s=>{const a=acteurById(s.acteur);return a?a.role_fonction:null;}).filter(Boolean))];
+    return `<tr data-id="${p.id}">
+      <td class="proc-name">${esc(p.nom)}</td>
+      <td>${domBadge(p.domaine)}</td>
+      <td style="text-align:center">${steps.length}</td>
+      <td>${accountables.map(r=>`<span class="dsfr-badge">${esc(r)}</span>`).join(" ")||'<span style="color:var(--text-mention)">—</span>'}</td>
+      <td style="text-align:center">${livs.length}</td>
+      <td>${p.duree_totale?esc(p.duree_totale):"—"}</td>
+    </tr>`;
+  }).join("");
+  root.innerHTML=`
+    <div style="color:var(--text-mention);font-size:var(--fs-sm);margin-bottom:var(--s-4)">Clic sur une procédure pour ouvrir sa fiche détaillée.</div>
+    <table class="matrix"><thead><tr><th>Procédure</th><th>Domaine</th><th>Étapes</th><th>Accountable (A)</th><th>Docs</th><th>Durée</th></tr></thead><tbody>${rows}</tbody></table>`;
+  root.querySelectorAll("tbody tr").forEach(tr=>{
+    tr.onclick=()=>{ state.selected=parseInt(tr.dataset.id); switchView("detail"); renderDetail(); };
+  });
+}
+
+// ---- Nav ----
+function switchView(name){
+  document.querySelectorAll("nav.tabs button").forEach(b=>b.classList.toggle("active",b.dataset.view===name));
+  document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id==="view-"+name));
+}
+document.querySelectorAll("nav.tabs button").forEach(b=>b.onclick=()=>switchView(b.dataset.view));
+document.getElementById("refresh").onclick=loadAll;
+document.getElementById("print-btn").onclick=()=>window.print();
+document.getElementById("cfg-btn").onclick=showConfig;
+
+function showConfig(){
+  const c=getCfg();
+  const ov=document.createElement("div"); ov.className="cfg-overlay";
+  ov.innerHTML=`<div class="cfg-modal">
+    <h2>Connexion à un doc Grist réel (test)</h2>
+    <p class="hint">Optionnel. Sans configuration, le widget affiche un jeu de démonstration fictif. En usage normal, embarquez-le comme Custom Widget dans le doc EAC-DEEP : aucune configuration requise.</p>
+    <label>Serveur</label><input id="c-srv" value="${c.server||'https://grist.numerique.gouv.fr'}">
+    <label>Document ID (EAC-DEEP)</label><input id="c-doc" value="${c.docId||''}" placeholder="tRCtBcPekLx2hRe5zjAmho">
+    <label>Clé d'API</label><input id="c-key" type="password" value="${c.apiKey||''}">
+    <div style="margin-top:var(--s-4);display:flex;gap:var(--s-2)">
+      <button class="dsfr-btn" id="c-save">Charger</button>
+      <button class="dsfr-btn dsfr-btn--sec" id="c-demo">Voir la démo fictive</button>
+    </div>
+  </div>`;
+  document.body.appendChild(ov);
+  document.getElementById("c-save").onclick=()=>{ setCfg({server:document.getElementById("c-srv").value.trim().replace(/\/$/,""),docId:document.getElementById("c-doc").value.trim(),apiKey:document.getElementById("c-key").value.trim()}); ov.remove(); loadAll(); };
+  document.getElementById("c-demo").onclick=()=>{ ov.remove(); loadDemo(); };
+  ov.onclick=e=>{ if(e.target===ov) ov.remove(); };
+}
+
+// ---- Jeu de démonstration FICTIF (aucune donnée réelle) ----
+function loadDemo(){
+  state.demo=true;
+  document.getElementById("demo-banner").style.display="block";
+  document.getElementById("meta").textContent="Démonstration (données fictives)";
+  state.documents=[
+    {id:1,nom:"Document exemple A"},{id:2,nom:"Document exemple B"},{id:3,nom:"Pièce justificative démo"}
+  ];
+  state.acteurs=[
+    {id:1,code:"ROLE_A",role_fonction:"Rôle A — initiateur"},
+    {id:2,code:"ROLE_B",role_fonction:"Rôle B — vérificateur"},
+    {id:3,code:"ROLE_C",role_fonction:"Rôle C — validateur"}
+  ];
+  state.procedures=[
+    {id:1,code:"DEMO_PAY",nom:"Procédure exemple — Paiement (démo)",domaine:"Finance",description:"Exemple fictif illustrant le rendu d'une fiche procédure.",duree_totale:"~1 semaine",citation:"Démo"},
+    {id:2,code:"DEMO_ACHAT",nom:"Procédure exemple — Achat (démo)",domaine:"Achat",description:"Exemple fictif avec grille de seuils.",duree_totale:"~9 semaines",citation:"Démo"}
+  ];
+  state.etapes=[
+    {id:1,procedure:1,ordre:1,etape:"Soumission du dossier",acteur:1,raci:"R — Responsible",delai:"J0",livrable:1,note:""},
+    {id:2,procedure:1,ordre:2,etape:"Vérification de complétude",acteur:2,raci:"R — Responsible",delai:"J+1",livrable:0,note:"Dossier incomplet → retour."},
+    {id:3,procedure:1,ordre:3,etape:"Validation finale",acteur:3,raci:"A — Accountable",delai:"J+2",livrable:0,note:""},
+    {id:4,procedure:2,ordre:1,etape:"Définition du besoin (ToR)",acteur:1,raci:"R — Responsible",delai:"—",livrable:2,note:""},
+    {id:5,procedure:2,ordre:2,etape:"Avis de non-objection",acteur:3,raci:"A — Accountable",delai:"4 jours",livrable:0,note:""}
+  ];
+  state.livrables=[
+    {id:1,procedure:1,document:1,obligation:"Obligatoire",condition:"",audit_critique:true},
+    {id:2,procedure:1,document:3,obligation:"Conditionnel",condition:"Si applicable",audit_critique:false},
+    {id:3,procedure:2,document:2,obligation:"Obligatoire",condition:"",audit_critique:true}
+  ];
+  state.seuils=[
+    {id:1,code:"D1",palier:"< 1 000 €",borne_min:0,borne_max:1000,procedure_applicable:"Achat direct",forme_contrat:"Facture",comite:"—",ano_detail:"Validation chef de projet",publication:"Aucune",nb_offres:"—",delais:"—"},
+    {id:2,code:"D2",palier:"40 000 – 200 000 €",borne_min:40000,borne_max:200000,procedure_applicable:"Procédure adaptée",forme_contrat:"Contrat",comite:"REC",ano_detail:"ANO avant lancement et signature",publication:"Obligatoire",nb_offres:"5 offres",delais:"~9-10 semaines"}
+  ];
+  state.delais=[
+    {id:1,type_demande:"Demande exemple",domaine:"Finance",delai_minimum:"5 jours avant",delai_recommande:"2 semaines avant",infos_requises:"Pièces de base + ligne budgétaire"},
+    {id:2,type_demande:"Achat exemple",domaine:"Achat",delai_minimum:"Anticiper ~9 semaines",delai_recommande:"—",infos_requises:"ToR validé, estimation"}
+  ];
+  state.selected=1;
+  finishLoad();
+}
+
+// ---- Bootstrap (détection robuste : grist défini ET iframé) ----
+function bootstrap(){
+  const inIframe = (()=>{ try { return window.self!==window.top; } catch { return true; } })();
+  if(typeof grist!=="undefined" && grist && grist.ready && inIframe){
+    GRIST_MODE="widget";
+    document.getElementById("cfg-btn").style.display="none";
+    document.getElementById("mode-indicator").textContent="Custom Widget Grist";
+    grist.ready({requiredAccess:"full"});
+    grist.onRecords(()=>loadAll());
+    loadAll();
+  }else{
+    GRIST_MODE="standalone";
+    document.getElementById("mode-indicator").textContent="Mode standalone";
+    const c=getCfg();
+    if(c.server&&c.docId&&c.apiKey){ loadAll(); } else { loadDemo(); }
+  }
+}
+if(document.readyState==="complete") bootstrap();
+else window.addEventListener("load",bootstrap);
+</script>
+</body>
+</html>
