@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Matrice RACI globale — procédures × rôles (DEEP / USP)</title>
+<style>
+:root{
+  --blue-france-925:#e3e3fd; --blue-france-125:#1212ff; --blue-france-sun:#000091;
+  --red-marianne-472:#e1000f;
+  --grey-50:#161616; --grey-200:#3a3a3a; --grey-425:#666; --grey-625:#929292;
+  --grey-900:#ddd; --grey-925:#e5e5e5; --grey-950:#eee; --grey-975:#f6f6f6; --grey-1000:#fff;
+  --info-425:#0063cb; --info-950:#e8edff;
+  --success-425:#18753c; --warning-425:#b34000; --warning-950:#ffe9e6; --error-425:#ce0500;
+  --bg-default:var(--grey-1000); --bg-alt:var(--grey-975); --bg-alt-blue:#f5f5fe; --bg-contrast:var(--grey-950);
+  --bg-action-high:var(--blue-france-sun); --bg-action-low:var(--blue-france-925);
+  --text-title:var(--grey-50); --text-default:var(--grey-200); --text-mention:var(--grey-425);
+  --text-blue:var(--blue-france-sun); --text-inverted-blue:#f5f5fe;
+  --border-default:var(--grey-900); --border-plain:var(--blue-france-sun);
+  --fs-h5:1.375rem; --fs-md:1rem; --fs-sm:.875rem; --fs-xs:.75rem;
+  --s-1:.25rem; --s-2:.5rem; --s-3:.75rem; --s-4:1rem; --s-5:1.25rem; --s-6:1.5rem; --s-8:2rem;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;font-family:'Marianne',Arial,sans-serif;font-size:var(--fs-md);line-height:1.5;color:var(--text-default);background:var(--bg-default);-webkit-font-smoothing:antialiased}
+h1{color:var(--text-title);font-weight:700;margin:0;font-size:var(--fs-h5)}
+code{font-family:ui-monospace,Menlo,monospace;font-size:.85em;background:var(--bg-contrast);padding:.1em .35em}
+:focus-visible{outline:2px solid #0a76f6;outline-offset:2px}
+
+header.app-header{background:var(--bg-default);border-bottom:1px solid var(--border-default);padding:var(--s-4) var(--s-6);display:flex;justify-content:space-between;align-items:flex-start;gap:var(--s-4)}
+header.app-header .meta{font-size:var(--fs-sm);color:var(--text-mention);margin-top:var(--s-1)}
+header.app-header .mode{font-size:var(--fs-xs);color:var(--text-mention);text-transform:uppercase;letter-spacing:.04em;margin-top:var(--s-1)}
+.actions{display:flex;gap:var(--s-2);flex:none}
+.dsfr-btn{display:inline-flex;align-items:center;gap:var(--s-2);padding:var(--s-2) var(--s-4);min-height:2.25rem;border:1px solid transparent;background:var(--bg-action-high);color:var(--text-inverted-blue);font-family:inherit;font-size:var(--fs-sm);font-weight:500;cursor:pointer;text-decoration:none;border-radius:0}
+.dsfr-btn:hover{background:var(--blue-france-125)}
+.dsfr-btn--sec{background:transparent;color:var(--text-blue);border-color:currentColor}
+.dsfr-btn--sec:hover{background:var(--bg-action-low)}
+
+.demo-banner{background:var(--warning-950);color:var(--warning-425);padding:var(--s-2) var(--s-6);font-size:var(--fs-sm);font-weight:500;text-align:center}
+main{padding:var(--s-6)}
+
+.legend{display:flex;flex-wrap:wrap;gap:var(--s-4);align-items:center;margin-bottom:var(--s-4);font-size:var(--fs-sm)}
+.legend .item{display:inline-flex;align-items:center;gap:var(--s-2);color:var(--text-mention)}
+.raci{display:inline-flex;align-items:center;justify-content:center;width:1.35rem;height:1.35rem;font-weight:700;font-size:var(--fs-xs);color:var(--grey-1000)}
+.raci-R{background:var(--blue-france-sun)} .raci-A{background:var(--red-marianne-472)}
+.raci-C{background:var(--info-425)} .raci-I{background:var(--text-mention)}
+
+.dom-filter{display:flex;flex-wrap:wrap;gap:var(--s-2);margin-bottom:var(--s-4)}
+.dom-chip{padding:var(--s-1) var(--s-3);font-size:var(--fs-xs);font-weight:700;text-transform:uppercase;letter-spacing:.02em;border:1px solid var(--border-default);background:var(--bg-default);color:var(--text-mention);cursor:pointer}
+.dom-chip.active{background:var(--bg-action-low);color:var(--text-blue);border-color:var(--text-blue)}
+
+.matrix-wrap{overflow:auto;max-height:74vh;border:1px solid var(--border-default)}
+table.matrix{border-collapse:separate;border-spacing:0;font-size:var(--fs-xs)}
+table.matrix th,table.matrix td{border-right:1px solid var(--border-default);border-bottom:1px solid var(--border-default)}
+/* coin haut-gauche figé */
+.corner{position:sticky;top:0;left:0;z-index:5;background:var(--bg-action-high);color:var(--text-inverted-blue);min-width:17rem;max-width:17rem;text-align:left;padding:var(--s-2) var(--s-3);font-weight:700;vertical-align:bottom}
+/* bande domaines */
+.dom-band{position:sticky;top:0;z-index:4;color:var(--grey-1000);font-weight:700;text-transform:uppercase;letter-spacing:.04em;font-size:var(--fs-xs);padding:var(--s-1) var(--s-2);text-align:center;height:1.6rem}
+/* en-têtes rôles (pivotés) */
+.role-head{position:sticky;top:1.6rem;z-index:3;background:var(--bg-alt);height:11rem;width:2.3rem;min-width:2.3rem;max-width:2.3rem;padding:var(--s-2) 0;vertical-align:bottom}
+.role-head .lbl{writing-mode:vertical-rl;transform:rotate(180deg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-height:10.4rem;font-weight:500;color:var(--text-title);margin:0 auto;display:block;font-size:var(--fs-xs)}
+/* première colonne (procédures) figée */
+.proc-head{position:sticky;left:0;z-index:2;background:var(--bg-default);min-width:17rem;max-width:17rem;text-align:left;padding:var(--s-2) var(--s-3);vertical-align:middle}
+.proc-head .pname{font-weight:700;color:var(--text-title);font-size:var(--fs-sm);line-height:1.25}
+.proc-head .pdom{display:inline-block;margin-top:2px;font-size:var(--fs-xs);font-weight:700;text-transform:uppercase;letter-spacing:.02em;color:var(--text-mention)}
+tbody tr:nth-child(even) .proc-head{background:var(--bg-alt)}
+tbody tr:nth-child(even) td{background:var(--bg-alt)}
+td.cell{text-align:center;vertical-align:middle;padding:2px;width:2.3rem;min-width:2.3rem}
+td.cell .stack{display:flex;gap:1px;justify-content:center;flex-wrap:wrap}
+td.cell.empty{background:var(--bg-default)}
+tbody tr:hover td,tbody tr:hover .proc-head{background:var(--bg-alt-blue)!important}
+/* séparateur visuel entre domaines de colonnes */
+.role-head.dom-start,td.cell.dom-start,.dom-band.dom-start{border-left:2px solid var(--text-mention)}
+
+.empty,.loading{text-align:center;padding:var(--s-8);color:var(--text-mention)}
+
+.cfg-overlay{position:fixed;inset:0;background:rgba(22,22,22,.6);display:flex;align-items:center;justify-content:center;z-index:100;padding:var(--s-4)}
+.cfg-modal{background:var(--bg-default);padding:var(--s-6);max-width:32rem;width:100%;border-top:4px solid var(--border-plain)}
+.cfg-modal h2{font-size:1.25rem;margin:0 0 var(--s-3)}
+.cfg-modal label{display:block;margin:var(--s-3) 0 var(--s-1);font-size:var(--fs-sm);font-weight:500;color:var(--text-title)}
+.cfg-modal input{width:100%;padding:var(--s-2);background:var(--bg-contrast);border:0;border-bottom:2px solid var(--text-title);font-family:inherit;font-size:var(--fs-sm)}
+.cfg-modal .hint{font-size:var(--fs-xs);color:var(--text-mention);margin-top:var(--s-1)}
+
+@media print{
+  @page{size:A4 landscape;margin:1cm}
+  .actions,.demo-banner,.dom-filter{display:none!important}
+  header.app-header{position:static;border-bottom:2px solid #000}
+  .matrix-wrap{overflow:visible;max-height:none;border:1px solid #000}
+  table.matrix{font-size:7pt}
+  .corner,.dom-band,.role-head,.proc-head{position:static!important}
+  .role-head{height:7rem}.role-head .lbl{max-height:6.4rem}
+  .corner,.dom-band{background:#000!important;color:#fff!important}
+}
+</style>
+</head>
+<body>
+<header class="app-header">
+  <div>
+    <h1>Matrice RACI globale</h1>
+    <div class="meta" id="meta">Chargement…</div>
+    <div class="mode" id="mode-indicator"></div>
+  </div>
+  <div class="actions">
+    <button id="print-btn" class="dsfr-btn dsfr-btn--sec" type="button">Imprimer</button>
+    <button id="cfg-btn" class="dsfr-btn dsfr-btn--sec" type="button">Données réelles…</button>
+    <button id="refresh" class="dsfr-btn" type="button">Recharger</button>
+  </div>
+</header>
+<div class="demo-banner" id="demo-banner" style="display:none">Jeu de démonstration fictif — aucune donnée réelle. Embarquez le widget dans Grist (EAC-DEEP) pour la vraie matrice.</div>
+<main>
+  <div class="legend" id="legend"></div>
+  <div class="dom-filter" id="dom-filter"></div>
+  <div id="matrix-root"></div>
+</main>
+
+<script src="https://grist.numerique.gouv.fr/grist-plugin-api.js"
+        onerror="this.onerror=null;this.src='https://docs.getgrist.com/grist-plugin-api.js'"></script>
+<script>
+// Matrice RACI globale — procédures (lignes) × rôles (colonnes) × lettres RACI.
+// Confidentialité : `nom` d'Acteurs_USP JAMAIS chargé (state = {id, code, role_fonction, domaine}).
+let GRIST_MODE=null;
+const CFG_KEY="matrice_raci_cfg";
+const getCfg=()=>{try{return JSON.parse(localStorage.getItem(CFG_KEY))||{};}catch{return{};}};
+const setCfg=c=>localStorage.setItem(CFG_KEY,JSON.stringify(c));
+const DOMAINES=["Finance","Achat","Logistique","Audit","Actifs","RH","Contractuel","Transverse","Externe"];
+const state={procedures:[],etapes:[],acteurs:[],demo:false,domFilter:null};
+
+async function fetchTable_widget(name){
+  const raw=await grist.docApi.fetchTable(name);
+  if(!raw||!raw.id) return [];
+  const cols=Object.keys(raw),n=raw.id.length,out=[];
+  for(let i=0;i<n;i++){const r={};for(const c of cols)r[c]=raw[c][i];out.push(r);}
+  return out;
+}
+async function fetchTable_rest(name){
+  const c=getCfg();
+  const url=`${c.server}/api/docs/${encodeURIComponent(c.docId)}/tables/${encodeURIComponent(name)}/records`;
+  const res=await fetch(url,{headers:{Authorization:`Bearer ${c.apiKey}`}});
+  if(!res.ok) throw new Error(`${name}: HTTP ${res.status}`);
+  const d=await res.json();
+  return d.records.map(r=>({id:r.id,...r.fields}));
+}
+const fetchTable=n=>GRIST_MODE==="widget"?fetchTable_widget(n):fetchTable_rest(n);
+
+async function loadAll(){
+  document.getElementById("meta").textContent="Chargement…";
+  try{
+    const [procedures,etapes,acteursRaw]=await Promise.all([
+      fetchTable("Procedures"),fetchTable("Procedure_etapes"),fetchTable("Acteurs_USP")
+    ]);
+    // CONFIDENTIALITÉ : on ne garde QUE id, code, role_fonction, domaine. `nom` ignoré.
+    const acteurs=acteursRaw.map(a=>({id:a.id,code:a.code,role_fonction:a.role_fonction,domaine:a.domaine}));
+    Object.assign(state,{procedures,etapes,acteurs,demo:false});
+    document.getElementById("demo-banner").style.display="none";
+    render();
+  }catch(e){
+    if(GRIST_MODE==="standalone"){ loadDemo(); }
+    else { document.getElementById("meta").textContent="Erreur : "+e.message; }
+  }
+}
+
+function esc(s){if(s==null)return"";return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));}
+const raciLetter=r=>{const m=(r||"").trim()[0];return ["R","A","C","I"].includes(m)?m:null;};
+const RACI_ORDER={R:0,A:1,C:2,I:3};
+
+// ---- Agrégation matrice ----
+function build(){
+  const roleById={}; // acteur id -> {role, domaine}
+  state.acteurs.forEach(a=>{ roleById[a.id]={role:a.role_fonction,domaine:a.domaine}; });
+  // rôles intervenant réellement + leur domaine + fréquence
+  const roleMeta={}; // role -> {domaine, count}
+  state.etapes.forEach(e=>{
+    const m=roleById[e.acteur]; if(!m||!m.role) return;
+    if(!roleMeta[m.role]) roleMeta[m.role]={domaine:m.domaine||"Transverse",count:0};
+    roleMeta[m.role].count++;
+  });
+  // ordre des colonnes : par domaine (ordre DOMAINES) puis par fréquence desc
+  let roles=Object.keys(roleMeta);
+  roles.sort((a,b)=>{
+    const da=DOMAINES.indexOf(roleMeta[a].domaine), db=DOMAINES.indexOf(roleMeta[b].domaine);
+    if(da!==db) return (da<0?99:da)-(db<0?99:db);
+    return roleMeta[b].count-roleMeta[a].count;
+  });
+  // cellules : (procId, role) -> Set lettres
+  const cell={};
+  state.etapes.forEach(e=>{
+    const m=roleById[e.acteur]; const l=raciLetter(e.raci);
+    if(!m||!m.role||!l) return;
+    const k=e.procedure+"||"+m.role;
+    (cell[k]||(cell[k]=new Set())).add(l);
+  });
+  return {roles,roleMeta,cell};
+}
+
+function render(){
+  if(!state.procedures.length){ document.getElementById("matrix-root").innerHTML='<div class="empty">Aucune procédure.</div>'; return; }
+  const {roles,roleMeta,cell}=build();
+  document.getElementById("meta").textContent=`${state.procedures.length} procédures × ${roles.length} rôles · ${state.etapes.length} étapes`;
+
+  // légende
+  document.getElementById("legend").innerHTML=
+    ['R Responsible','A Accountable','C Consulted','I Informed'].map(s=>{
+      const l=s[0]; return `<span class="item"><span class="raci raci-${l}">${l}</span> ${esc(s.slice(2))}</span>`;
+    }).join("");
+
+  // filtre domaine (lignes)
+  const doms=[...new Set(state.procedures.map(p=>p.domaine).filter(Boolean))]
+    .sort((a,b)=>DOMAINES.indexOf(a)-DOMAINES.indexOf(b));
+  document.getElementById("dom-filter").innerHTML=
+    `<span class="dom-chip ${state.domFilter==null?'active':''}" data-d="">Tous les domaines</span>`+
+    doms.map(d=>`<span class="dom-chip ${state.domFilter===d?'active':''}" data-d="${esc(d)}">${esc(d)}</span>`).join("");
+  document.querySelectorAll(".dom-chip").forEach(ch=>ch.onclick=()=>{ state.domFilter=ch.dataset.d||null; render(); });
+
+  // domaines de colonnes (pour bande + séparateurs)
+  const colDoms=roles.map(r=>roleMeta[r].domaine);
+  const domSpans=[]; // {domaine, start, len}
+  for(let i=0;i<roles.length;i++){
+    if(i===0||colDoms[i]!==colDoms[i-1]) domSpans.push({domaine:colDoms[i],start:i,len:1});
+    else domSpans[domSpans.length-1].len++;
+  }
+  const isDomStart=i=>i>0&&colDoms[i]!==colDoms[i-1];
+
+  const procs=state.procedures.filter(p=>!state.domFilter||p.domaine===state.domFilter);
+
+  const bandRow=`<tr><th class="corner" rowspan="2">Procédure ↓ / Rôle →</th>`+
+    domSpans.map(s=>`<th class="dom-band ${s.start>0?'dom-start':''}" colspan="${s.len}" style="background:${domColor(s.domaine)}" title="${esc(s.domaine)}">${esc(abbrDom(s.domaine))}</th>`).join("")+`</tr>`;
+  const roleRow=`<tr>`+roles.map((r,i)=>`<th class="role-head ${isDomStart(i)?'dom-start':''}" title="${esc(r)}"><span class="lbl">${esc(r)}</span></th>`).join("")+`</tr>`;
+
+  const body=procs.map(p=>{
+    const cells=roles.map((r,i)=>{
+      const set=cell[p.id+"||"+r];
+      if(!set) return `<td class="cell empty ${isDomStart(i)?'dom-start':''}"></td>`;
+      const letters=[...set].sort((a,b)=>RACI_ORDER[a]-RACI_ORDER[b]);
+      return `<td class="cell ${isDomStart(i)?'dom-start':''}"><div class="stack">${letters.map(l=>`<span class="raci raci-${l}">${l}</span>`).join("")}</div></td>`;
+    }).join("");
+    return `<tr><th class="proc-head"><div class="pname">${esc(p.nom)}</div><span class="pdom">${esc(p.domaine||"")}</span></th>${cells}</tr>`;
+  }).join("");
+
+  document.getElementById("matrix-root").innerHTML=
+    `<div class="matrix-wrap"><table class="matrix"><thead>${bandRow}${roleRow}</thead><tbody>${body}</tbody></table></div>`;
+}
+
+function abbrDom(d){return d||"—";}
+function domColor(d){
+  const m={Finance:"#b34000",Achat:"#18753c",Logistique:"#0063cb",Audit:"#000091",Actifs:"#6a6af4",RH:"#929292",Contractuel:"#c9191e",Transverse:"#666",Externe:"#3a3a3a"};
+  return m[d]||"#000091";
+}
+
+// ---- Nav / boutons ----
+document.getElementById("refresh").onclick=loadAll;
+document.getElementById("print-btn").onclick=()=>window.print();
+document.getElementById("cfg-btn").onclick=showConfig;
+function showConfig(){
+  const c=getCfg();
+  const ov=document.createElement("div");ov.className="cfg-overlay";
+  ov.innerHTML=`<div class="cfg-modal"><h2>Connexion à un doc Grist réel (test)</h2>
+    <p class="hint">Optionnel. Sans configuration, jeu de démonstration fictif. En usage normal, embarquez le widget dans le doc EAC-DEEP : aucune configuration requise.</p>
+    <label>Serveur</label><input id="c-srv" value="${esc(c.server||'https://grist.numerique.gouv.fr')}">
+    <label>Document ID (EAC-DEEP)</label><input id="c-doc" value="${esc(c.docId||'')}" placeholder="tRCtBcPekLx2hRe5zjAmho">
+    <label>Clé d'API</label><input id="c-key" type="password" value="${esc(c.apiKey||'')}">
+    <div style="margin-top:var(--s-4);display:flex;gap:var(--s-2)">
+      <button class="dsfr-btn" id="c-save">Charger</button>
+      <button class="dsfr-btn dsfr-btn--sec" id="c-demo">Voir la démo fictive</button>
+    </div></div>`;
+  document.body.appendChild(ov);
+  document.getElementById("c-save").onclick=()=>{setCfg({server:document.getElementById("c-srv").value.trim().replace(/\/$/,""),docId:document.getElementById("c-doc").value.trim(),apiKey:document.getElementById("c-key").value.trim()});ov.remove();loadAll();};
+  document.getElementById("c-demo").onclick=()=>{ov.remove();loadDemo();};
+  ov.onclick=e=>{if(e.target===ov)ov.remove();};
+}
+
+// ---- Jeu fictif (aucune donnée réelle) ----
+function loadDemo(){
+  state.demo=true;
+  document.getElementById("demo-banner").style.display="block";
+  document.getElementById("meta").textContent="Démonstration (données fictives)";
+  state.acteurs=[
+    {id:1,code:"ROLE_INIT",role_fonction:"Rôle A — initiateur",domaine:"Finance"},
+    {id:2,code:"ROLE_VERIF",role_fonction:"Rôle B — vérificateur",domaine:"Finance"},
+    {id:3,code:"ROLE_VALID",role_fonction:"Rôle C — validateur",domaine:"Finance"},
+    {id:4,code:"ROLE_ACH",role_fonction:"Rôle D — acheteur",domaine:"Achat"},
+    {id:5,code:"ROLE_LOG",role_fonction:"Rôle E — logistique",domaine:"Logistique"}
+  ];
+  state.procedures=[
+    {id:1,code:"DEMO_PAY",nom:"Procédure exemple — Paiement (démo)",domaine:"Finance"},
+    {id:2,code:"DEMO_ACH",nom:"Procédure exemple — Achat (démo)",domaine:"Achat"},
+    {id:3,code:"DEMO_MIS",nom:"Procédure exemple — Mission (démo)",domaine:"Logistique"}
+  ];
+  state.etapes=[
+    {id:1,procedure:1,acteur:1,raci:"R — Responsible"},
+    {id:2,procedure:1,acteur:2,raci:"R — Responsible"},
+    {id:3,procedure:1,acteur:2,raci:"C — Consulted"}, // même rôle, 2 lettres → "R C"
+    {id:4,procedure:1,acteur:3,raci:"A — Accountable"},
+    {id:5,procedure:2,acteur:4,raci:"R — Responsible"},
+    {id:6,procedure:2,acteur:3,raci:"A — Accountable"},
+    {id:7,procedure:2,acteur:2,raci:"I — Informed"},
+    {id:8,procedure:3,acteur:5,raci:"R — Responsible"},
+    {id:9,procedure:3,acteur:1,raci:"C — Consulted"}
+  ];
+  state.domFilter=null;
+  render();
+}
+
+// ---- Bootstrap (robuste : grist défini ET iframé) ----
+function bootstrap(){
+  const inIframe=(()=>{try{return window.self!==window.top;}catch{return true;}})();
+  if(typeof grist!=="undefined"&&grist&&grist.ready&&inIframe){
+    GRIST_MODE="widget";
+    document.getElementById("cfg-btn").style.display="none";
+    document.getElementById("mode-indicator").textContent="Custom Widget Grist";
+    grist.ready({requiredAccess:"full"});
+    grist.onRecords(()=>loadAll());
+    loadAll();
+  }else{
+    GRIST_MODE="standalone";
+    document.getElementById("mode-indicator").textContent="Mode standalone";
+    const c=getCfg();
+    if(c.server&&c.docId&&c.apiKey){ loadAll(); } else { loadDemo(); }
+  }
+}
+if(document.readyState==="complete") bootstrap();
+else window.addEventListener("load",bootstrap);
+</script>
+</body>
+</html>
